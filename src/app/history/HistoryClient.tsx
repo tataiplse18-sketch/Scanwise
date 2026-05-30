@@ -157,7 +157,7 @@ export default function HistoryClient({ scans }: HistoryClientProps) {
                 <button
                   onClick={() => {
                     if (!isConfirming) {
-                      router.push(`/result/${scan.id}`);
+                      router.push(`/result?barcode=${encodeURIComponent(scan.barcode)}`);
                     }
                   }}
                   className={cn(

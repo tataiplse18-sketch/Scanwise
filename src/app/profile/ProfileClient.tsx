@@ -61,11 +61,12 @@ export default function ProfileClient({
 
   async function handleLogout() {
     setLoggingOut(true);
-    // Call the SERVER ACTION — signs out on the server (clears cookies)
-    // and redirects to /login. If redirect happens, we won't reach the
-    // line below.
     try {
-      await logoutAction();
+      const result = await logoutAction();
+      if (result?.success) {
+        // Full page reload → clears session cookies properly
+        window.location.href = "/login";
+      }
     } catch {
       // If something goes wrong, force navigation to login
       window.location.href = "/login";

@@ -194,7 +194,7 @@ export default function DashboardClient({
               return (
                 <button
                   key={scan.id}
-                  onClick={() => router.push(`/result/${scan.id}`)}
+                  onClick={() => router.push(`/result?barcode=${encodeURIComponent(scan.barcode)}`)}
                   className="glass-card flex w-full items-center gap-4 p-4 hover:border-dark-600 transition-colors text-left"
                 >
                   {/* Health Score Circle */}

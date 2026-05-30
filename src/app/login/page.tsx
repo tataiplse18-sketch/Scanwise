@@ -17,20 +17,25 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
 
-    // Build FormData and call the SERVER ACTION
-    // The server action uses the server-side Supabase client,
-    // so auth cookies are set in the HTTP response headers.
     const formData = new FormData();
     formData.append("email", email);
     formData.append("password", password);
 
-    const result = await loginAction(formData);
+    try {
+      const result = await loginAction(formData);
 
-    // We only reach this line if redirect() did NOT happen (i.e. login failed).
-    // If login succeeded, redirect("/home") was called inside the server action
-    // and Next.js is handling the redirect — we do NOT reset loading state here.
-    if (result?.error) {
-      setError(result.error);
+      if (result?.success) {
+        // Full page reload → browser sends cookies with the request
+        window.location.href = "/home";
+        return;
+      }
+
+      if (result?.error) {
+        setError(result.error);
+        setLoading(false);
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
       setLoading(false);
     }
   }

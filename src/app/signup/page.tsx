@@ -21,7 +21,6 @@ export default function SignupPage() {
     e.preventDefault();
     setError(null);
 
-    // Client-side validation (for instant feedback)
     if (!fullName.trim()) {
       setError("Full name is required.");
       return;
@@ -37,27 +36,34 @@ export default function SignupPage() {
 
     setLoading(true);
 
-    // Build FormData and call the SERVER ACTION
     const formData = new FormData();
     formData.append("fullName", fullName);
     formData.append("email", email);
     formData.append("password", password);
     formData.append("confirmPassword", confirmPassword);
 
-    const result = await signupAction(formData);
+    try {
+      const result = await signupAction(formData);
 
-    // If redirect("/home") was called inside the server action (auto-confirmed),
-    // we never reach this line — Next.js handles the redirect.
-    if (result?.error) {
-      setError(result.error);
-      setLoading(false);
-      return;
-    }
+      if (result?.success) {
+        // Auto-confirmed → go to home with full page reload
+        window.location.href = "/home";
+        return;
+      }
 
-    // Email confirmation required — show success message
-    if (result?.emailConfirmation) {
-      setSuccessEmail(result.email ?? email);
-      setSuccess(true);
+      if (result?.error) {
+        setError(result.error);
+        setLoading(false);
+        return;
+      }
+
+      if (result?.emailConfirmation) {
+        setSuccessEmail(result.email ?? email);
+        setSuccess(true);
+        setLoading(false);
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
       setLoading(false);
     }
   }
@@ -113,14 +119,12 @@ export default function SignupPage() {
             Create your account
           </h2>
 
-          {/* Error Message */}
           {error && (
             <div className="rounded-xl bg-danger-500/10 border border-danger-500/20 px-4 py-3">
               <p className="text-danger-400 text-sm">{error}</p>
             </div>
           )}
 
-          {/* Full Name Field */}
           <div className="space-y-2">
             <label htmlFor="fullName" className="text-dark-300 text-sm font-medium">
               Full Name
@@ -136,7 +140,6 @@ export default function SignupPage() {
             />
           </div>
 
-          {/* Email Field */}
           <div className="space-y-2">
             <label htmlFor="email" className="text-dark-300 text-sm font-medium">
               Email
@@ -155,7 +158,6 @@ export default function SignupPage() {
             </div>
           </div>
 
-          {/* Password Field */}
           <div className="space-y-2">
             <label htmlFor="password" className="text-dark-300 text-sm font-medium">
               Password
@@ -186,7 +188,6 @@ export default function SignupPage() {
             </div>
           </div>
 
-          {/* Confirm Password Field */}
           <div className="space-y-2">
             <label htmlFor="confirmPassword" className="text-dark-300 text-sm font-medium">
               Confirm Password
@@ -217,7 +218,6 @@ export default function SignupPage() {
             </div>
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
@@ -237,7 +237,6 @@ export default function SignupPage() {
             )}
           </button>
 
-          {/* Login Link */}
           <p className="text-center text-sm text-dark-400">
             Already have an account?{" "}
             <a

@@ -1,34 +1,21 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 // ============================================================
 // ScanWise - Server Actions for Authentication
 // ============================================================
 //
-// All auth operations run on the SERVER so that Supabase cookies
-// (access_token, refresh_token) are set in the HTTP response
-// headers. This eliminates the cookie-sync issue that occurs when
-// auth is done client-side and the server component cannot read
-// the session on the next request.
-//
-// Flow:
-// 1. Client component calls the server action
-// 2. Server action uses the SERVER Supabase client (sets cookies)
-// 3. On success, redirect() is called — Next.js handles the
-//    redirect and the browser receives the Set-Cookie headers
-// 4. The target page's server component reads the session correctly
+// IMPORTANT: We do NOT use redirect() inside server actions.
+// In Next.js 14.2.x, redirect() throws NEXT_REDIRECT which
+// can cause Set-Cookie headers to be lost in the redirect
+// response. Instead, we return { success: true } and let the
+// client-side code do the navigation using window.location.href
+// (full page reload), which ensures cookies are properly sent.
 // ============================================================
 
-/**
- * Server Action: Login with email and password.
- *
- * Uses the server-side Supabase client so auth cookies are set
- * in the response headers, ensuring proper session persistence.
- * On success, redirects to /home via Next.js server redirect.
- */
-export async function loginAction(formData: FormData): Promise<{ error: string | null }> {
+export async function loginAction(formData: FormData): Promise<{ error: string | null; success?: boolean }> {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
 
@@ -47,22 +34,14 @@ export async function loginAction(formData: FormData): Promise<{ error: string |
     return { error: error.message };
   }
 
-  // redirect() throws NEXT_REDIRECT internally — Next.js handles it.
-  // The redirect response includes the Set-Cookie headers from
-  // the Supabase server client, so the session is properly persisted.
-  redirect("/home");
+  revalidatePath("/", "layout");
+
+  return { error: null, success: true };
 }
 
-/**
- * Server Action: Sign up with full name, email, and password.
- *
- * If email confirmation is disabled in Supabase, the user is
- * auto-confirmed and redirected to /home.
- * If email confirmation is required, returns a flag so the client
- * can display the verification email message.
- */
 export async function signupAction(formData: FormData): Promise<{
   error: string | null;
+  success?: boolean;
   emailConfirmation?: boolean;
   email?: string;
 }> {
@@ -103,24 +82,18 @@ export async function signupAction(formData: FormData): Promise<{
     return { error: error.message };
   }
 
-  // If session exists, user is auto-confirmed (email confirmation disabled)
-  // Redirect directly to /home
+  revalidatePath("/", "layout");
+
   if (data.session) {
-    redirect("/home");
+    return { error: null, success: true };
   }
 
-  // Email confirmation required — return info so client can show message
   return { error: null, emailConfirmation: true, email };
 }
 
-/**
- * Server Action: Log out the current user.
- *
- * Signs out on the server side, which clears the auth cookies
- * from the response. Then redirects to /login.
- */
-export async function logoutAction(): Promise<void> {
+export async function logoutAction(): Promise<{ success: boolean }> {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/login");
+  revalidatePath("/", "layout");
+  return { success: true };
 }
