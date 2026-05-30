@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import type { ScanResult, HealthScoreLabel } from "@/types";
@@ -12,10 +13,8 @@ import {
   ChevronRight,
   Trash2,
   Search,
-  Home,
-  ScanLine,
-  User,
 } from "lucide-react";
+import BottomNav from "@/components/BottomNav";
 
 interface HistoryClientProps {
   scans: ScanResult[];
@@ -71,12 +70,12 @@ export default function HistoryClient({ scans }: HistoryClientProps) {
     <div className="min-h-screen bg-dark-900">
       {/* ===== Top Bar ===== */}
       <header className="sticky top-0 z-50 flex items-center justify-between px-4 py-3 border-b border-dark-800 bg-dark-900/80 backdrop-blur-xl">
-        <button
-          onClick={() => router.push("/home")}
+        <Link
+          href="/home"
           className="flex h-9 w-9 items-center justify-center rounded-xl bg-dark-800 text-dark-400 hover:text-dark-200 transition-colors"
         >
           <ArrowLeft className="h-5 w-5" />
-        </button>
+        </Link>
         <h1 className="text-sm font-semibold text-dark-200">Scan History</h1>
         <div className="w-9" />
       </header>
@@ -126,13 +125,13 @@ export default function HistoryClient({ scans }: HistoryClientProps) {
             <p className="text-dark-400 text-sm max-w-xs">
               Start scanning to build your history!
             </p>
-            <button
-              onClick={() => router.push("/scan")}
+            <Link
+              href="/scan"
               className="mt-6 flex items-center gap-2 rounded-xl bg-primary-500 px-6 py-3 text-sm font-medium text-white hover:bg-primary-600 transition-colors"
             >
               <Search className="h-4 w-4" />
               Start Scanning
-            </button>
+            </Link>
           </div>
         )}
 
@@ -154,11 +153,10 @@ export default function HistoryClient({ scans }: HistoryClientProps) {
 
             return (
               <div key={scan.id} className="relative">
-                <button
-                  onClick={() => {
-                    if (!isConfirming) {
-                      router.push(`/result?barcode=${encodeURIComponent(scan.barcode)}`);
-                    }
+                <Link
+                  href={`/result?barcode=${encodeURIComponent(scan.barcode)}`}
+                  onClick={(e) => {
+                    if (isConfirming) e.preventDefault();
                   }}
                   className={cn(
                     "glass-card flex w-full items-center gap-4 p-4 text-left transition-colors",
@@ -202,7 +200,7 @@ export default function HistoryClient({ scans }: HistoryClientProps) {
                   {/* Actions */}
                   <div className="flex items-center gap-2 shrink-0">
                     {isConfirming ? (
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1" onClick={(e) => e.preventDefault()}>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -226,6 +224,7 @@ export default function HistoryClient({ scans }: HistoryClientProps) {
                     ) : (
                       <button
                         onClick={(e) => {
+                          e.preventDefault();
                           e.stopPropagation();
                           setConfirmDeleteId(scan.id);
                         }}
@@ -237,7 +236,7 @@ export default function HistoryClient({ scans }: HistoryClientProps) {
 
                     <ChevronRight className="h-4 w-4 text-dark-600" />
                   </div>
-                </button>
+                </Link>
               </div>
             );
           })}
@@ -245,38 +244,7 @@ export default function HistoryClient({ scans }: HistoryClientProps) {
       </main>
 
       {/* ===== Bottom Navigation ===== */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-dark-800 bg-dark-900/90 backdrop-blur-xl pb-safe">
-        <div className="flex items-center justify-around py-2">
-          <button
-            onClick={() => router.push("/home")}
-            className="flex flex-col items-center gap-1 px-4 py-1"
-          >
-            <Home className="h-5 w-5 text-dark-500" />
-            <span className="text-[10px] font-medium text-dark-500">Home</span>
-          </button>
-          <button
-            onClick={() => router.push("/scan")}
-            className="flex flex-col items-center gap-1 px-4 py-1"
-          >
-            <ScanLine className="h-5 w-5 text-dark-500" />
-            <span className="text-[10px] font-medium text-dark-500">Scan</span>
-          </button>
-          <button
-            onClick={() => router.push("/history")}
-            className="flex flex-col items-center gap-1 px-4 py-1"
-          >
-            <Clock className="h-5 w-5 text-primary-500" />
-            <span className="text-[10px] font-medium text-primary-500">History</span>
-          </button>
-          <button
-            onClick={() => router.push("/profile")}
-            className="flex flex-col items-center gap-1 px-4 py-1"
-          >
-            <User className="h-5 w-5 text-dark-500" />
-            <span className="text-[10px] font-medium text-dark-500">Profile</span>
-          </button>
-        </div>
-      </nav>
+      <BottomNav />
     </div>
   );
 }

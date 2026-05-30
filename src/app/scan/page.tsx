@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Html5Qrcode } from "html5-qrcode";
 import { checkScanLimitAction } from "@/app/auth-actions";
 import { cn } from "@/lib/utils";
@@ -169,12 +170,12 @@ export default function ScanPage() {
     return (
       <div className="min-h-screen bg-dark-900 flex flex-col">
         <header className="flex items-center justify-between px-4 py-3 pt-safe border-b border-dark-800 bg-dark-900/80 backdrop-blur-xl">
-          <button
-            onClick={() => router.push("/home")}
+          <Link
+            href="/home"
             className="flex h-9 w-9 items-center justify-center rounded-xl bg-dark-800 text-dark-400 hover:text-dark-200 transition-colors"
           >
             <ArrowLeft className="h-5 w-5" />
-          </button>
+          </Link>
           <h1 className="text-sm font-semibold text-dark-200">Scan Barcode</h1>
           <div className="w-9" />
         </header>
@@ -190,21 +191,21 @@ export default function ScanPage() {
             <p className="text-dark-400 text-sm mb-6">
               You&apos;ve used all 5 free scans. Upgrade to Premium for unlimited scanning and exclusive features.
             </p>
-            <button
-              onClick={() => router.push("/premium")}
-              className="w-full rounded-xl bg-gradient-to-r from-accent-500 to-accent-600 py-3 text-sm font-bold text-dark-900 hover:opacity-90 transition-opacity mb-3"
+            <Link
+              href="/premium"
+              className="block w-full rounded-xl bg-gradient-to-r from-accent-500 to-accent-600 py-3 text-sm font-bold text-dark-900 hover:opacity-90 transition-opacity mb-3 text-center"
             >
               <span className="flex items-center justify-center gap-2">
                 <Crown className="h-4 w-4" />
                 Upgrade to Premium
               </span>
-            </button>
-            <button
-              onClick={() => router.push("/home")}
-              className="w-full rounded-xl bg-dark-800 py-3 text-sm font-medium text-dark-400 hover:text-dark-200 transition-colors"
+            </Link>
+            <Link
+              href="/home"
+              className="block w-full rounded-xl bg-dark-800 py-3 text-sm font-medium text-dark-400 hover:text-dark-200 transition-colors text-center"
             >
               Back to Home
-            </button>
+            </Link>
           </div>
         </div>
       </div>
@@ -224,17 +225,19 @@ export default function ScanPage() {
     <div className="min-h-screen bg-dark-900 flex flex-col">
       {/* ===== Top Bar ===== */}
       <header className="flex items-center justify-between px-4 py-3 pt-safe border-b border-dark-800 bg-dark-900/80 backdrop-blur-xl">
-        <button
-          onClick={() => {
+        <Link
+          href="/home"
+          onClick={(e) => {
+            e.preventDefault();
             stopScanner();
             router.push("/home");
           }}
           className="flex h-9 w-9 items-center justify-center rounded-xl bg-dark-800 text-dark-400 hover:text-dark-200 transition-colors"
         >
           <ArrowLeft className="h-5 w-5" />
-        </button>
+        </Link>
         <h1 className="text-sm font-semibold text-dark-200">Scan Barcode</h1>
-        <div className="w-9" /> {/* Spacer for centering */}
+        <div className="w-9" />
       </header>
 
       {/* ===== Scanner Area ===== */}

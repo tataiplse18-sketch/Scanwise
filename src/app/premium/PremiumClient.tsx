@@ -1,9 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import {
-  ScanLine,
   Crown,
   Zap,
   BarChart3,
@@ -13,6 +12,7 @@ import {
   Shield,
   Star,
 } from "lucide-react";
+import BottomNav from "@/components/BottomNav";
 
 interface PremiumClientProps {
   scanCount: number;
@@ -59,18 +59,16 @@ const PREMIUM_FEATURES = [
 ];
 
 export default function PremiumClient({ scanCount, isPremium }: PremiumClientProps) {
-  const router = useRouter();
-
   return (
     <main className="min-h-screen bg-dark-900">
       {/* ===== Top Bar ===== */}
       <header className="sticky top-0 z-50 flex items-center justify-between px-4 py-3 border-b border-dark-800 bg-dark-900/80 backdrop-blur-xl">
-        <button
-          onClick={() => router.push("/home")}
+        <Link
+          href="/home"
           className="flex h-9 w-9 items-center justify-center rounded-xl bg-dark-800 text-dark-400 hover:text-dark-200 transition-colors"
         >
           <ArrowLeft className="h-5 w-5" />
-        </button>
+        </Link>
         <h1 className="text-sm font-semibold text-dark-200">Upgrade</h1>
         <div className="w-9" />
       </header>
@@ -193,32 +191,8 @@ export default function PremiumClient({ scanCount, isPremium }: PremiumClientPro
         )}
       </div>
 
-      {/* ===== Bottom Nav ===== */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-dark-800 bg-dark-900/90 backdrop-blur-xl pb-safe">
-        <div className="flex items-center justify-around py-2">
-          <button
-            onClick={() => router.push("/home")}
-            className="flex flex-col items-center gap-1 px-4 py-1"
-          >
-            <ScanLine className="h-5 w-5 text-dark-500" />
-            <span className="text-[10px] font-medium text-dark-500">Home</span>
-          </button>
-          <button
-            onClick={() => router.push("/scan")}
-            className="flex flex-col items-center gap-1 px-4 py-1"
-          >
-            <ScanLine className="h-5 w-5 text-dark-500" />
-            <span className="text-[10px] font-medium text-dark-500">Scan</span>
-          </button>
-          <button
-            onClick={() => router.push("/premium")}
-            className="flex flex-col items-center gap-1 px-4 py-1"
-          >
-            <Crown className="h-5 w-5 text-accent-400" />
-            <span className="text-[10px] font-medium text-accent-400">Premium</span>
-          </button>
-        </div>
-      </nav>
+      {/* ===== Bottom Navigation ===== */}
+      <BottomNav />
     </main>
   );
 }

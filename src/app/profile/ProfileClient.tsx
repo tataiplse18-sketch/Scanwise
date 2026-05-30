@@ -1,15 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { logoutAction } from "@/app/auth-actions";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
-  Home,
-  ScanLine,
-  Clock,
-  User,
   LogOut,
   Edit3,
   Shield,
@@ -23,6 +19,7 @@ import {
   Leaf,
   Zap,
 } from "lucide-react";
+import BottomNav from "@/components/BottomNav";
 
 interface ProfileClientProps {
   profile: {
@@ -72,8 +69,6 @@ export default function ProfileClient({
   profile,
   scanCount,
 }: ProfileClientProps) {
-  const router = useRouter();
-
   const [loggingOut, setLoggingOut] = useState(false);
 
   const displayName = profile.full_name || "User";
@@ -103,12 +98,12 @@ export default function ProfileClient({
     <div className="min-h-screen bg-dark-900">
       {/* ===== Top Bar ===== */}
       <header className="sticky top-0 z-50 flex items-center justify-between px-4 py-3 border-b border-dark-800 bg-dark-900/80 backdrop-blur-xl">
-        <button
-          onClick={() => router.push("/home")}
+        <Link
+          href="/home"
           className="flex h-9 w-9 items-center justify-center rounded-xl bg-dark-800 text-dark-400 hover:text-dark-200 transition-colors"
         >
           <ArrowLeft className="h-5 w-5" />
-        </button>
+        </Link>
         <h1 className="text-sm font-semibold text-dark-200">Profile</h1>
         <div className="w-9" />
       </header>
@@ -265,15 +260,15 @@ export default function ProfileClient({
               Get unlimited scans, advanced ingredient analysis, and personalized
               dietary recommendations.
             </p>
-            <button
-              onClick={() => router.push("/premium")}
-              className="w-full rounded-xl bg-gradient-to-r from-accent-500 to-accent-600 py-2.5 text-sm font-bold text-dark-900 hover:opacity-90 transition-opacity"
+            <Link
+              href="/premium"
+              className="block w-full rounded-xl bg-gradient-to-r from-accent-500 to-accent-600 py-2.5 text-sm font-bold text-dark-900 hover:opacity-90 transition-opacity text-center"
             >
               <span className="flex items-center justify-center gap-2">
                 <Crown className="h-4 w-4" />
                 Upgrade - ₹199/month
               </span>
-            </button>
+            </Link>
           </section>
         )}
 
@@ -302,38 +297,7 @@ export default function ProfileClient({
       </main>
 
       {/* ===== Bottom Navigation ===== */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-dark-800 bg-dark-900/90 backdrop-blur-xl pb-safe">
-        <div className="flex items-center justify-around py-2">
-          <button
-            onClick={() => router.push("/home")}
-            className="flex flex-col items-center gap-1 px-4 py-1"
-          >
-            <Home className="h-5 w-5 text-dark-500" />
-            <span className="text-[10px] font-medium text-dark-500">Home</span>
-          </button>
-          <button
-            onClick={() => router.push("/scan")}
-            className="flex flex-col items-center gap-1 px-4 py-1"
-          >
-            <ScanLine className="h-5 w-5 text-dark-500" />
-            <span className="text-[10px] font-medium text-dark-500">Scan</span>
-          </button>
-          <button
-            onClick={() => router.push("/history")}
-            className="flex flex-col items-center gap-1 px-4 py-1"
-          >
-            <Clock className="h-5 w-5 text-dark-500" />
-            <span className="text-[10px] font-medium text-dark-500">History</span>
-          </button>
-          <button
-            onClick={() => router.push("/profile")}
-            className="flex flex-col items-center gap-1 px-4 py-1"
-          >
-            <User className="h-5 w-5 text-primary-500" />
-            <span className="text-[10px] font-medium text-primary-500">Profile</span>
-          </button>
-        </div>
-      </nav>
+      <BottomNav />
     </div>
   );
 }

@@ -1,19 +1,18 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import {
   ScanLine,
-  Home,
-  Clock,
-  User,
   Search,
   GitCompare,
   ShoppingBag,
   ChevronRight,
   Crown,
   Zap,
+  Clock,
 } from "lucide-react";
+import BottomNav from "@/components/BottomNav";
 import type { ScanResult } from "@/types";
 import { getHealthScoreInfo } from "@/types";
 
@@ -55,8 +54,6 @@ export default function DashboardClient({
   profile,
   recentScans,
 }: DashboardClientProps) {
-  const router = useRouter();
-
   const displayName = profile.full_name || "User";
   const firstName = displayName.split(" ")[0];
   const isPremium = profile.is_premium;
@@ -76,12 +73,12 @@ export default function DashboardClient({
               <Crown className="h-3 w-3" /> PRO
             </span>
           )}
-          <button
-            onClick={() => router.push("/profile")}
+          <Link
+            href="/profile"
             className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-500/10 text-primary-400 text-sm font-semibold hover:bg-primary-500/20 transition-colors"
           >
             {displayName.charAt(0).toUpperCase()}
-          </button>
+          </Link>
         </div>
       </header>
 
@@ -116,13 +113,13 @@ export default function DashboardClient({
 
         {/* Scan Button - Main CTA */}
         <section className="flex flex-col items-center py-6 mb-6">
-          <button
-            onClick={() => router.push("/scan")}
+          <Link
+            href="/scan"
             className="relative flex h-32 w-32 items-center justify-center rounded-full bg-primary-500 pulse-glow transition-transform active:scale-95"
           >
             <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 opacity-90" />
             <ScanLine className="relative h-14 w-14 text-white" strokeWidth={1.5} />
-          </button>
+          </Link>
           <span className="mt-3 text-sm font-medium text-dark-300">
             Scan Now
           </span>
@@ -131,28 +128,27 @@ export default function DashboardClient({
         {/* Quick Actions */}
         <section className="mb-8">
           <div className="grid grid-cols-3 gap-3">
-            <button
-              onClick={() => router.push("/search")}
+            <Link
+              href="/search"
               className="glass-card flex flex-col items-center gap-2 p-4 hover:border-primary-500/30 transition-colors"
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-500/10">
                 <Search className="h-5 w-5 text-primary-400" />
               </div>
               <span className="text-xs font-medium text-dark-300">Search</span>
-            </button>
+            </Link>
 
-            <button
-              onClick={() => router.push("/history")}
+            <Link
+              href="/history"
               className="glass-card flex flex-col items-center gap-2 p-4 hover:border-primary-500/30 transition-colors"
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-500/10">
                 <Clock className="h-5 w-5 text-primary-400" />
               </div>
               <span className="text-xs font-medium text-dark-300">History</span>
-            </button>
+            </Link>
 
-            <button
-              disabled
+            <span
               className="glass-card relative flex flex-col items-center gap-2 p-4 opacity-60 cursor-not-allowed"
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-700">
@@ -162,7 +158,7 @@ export default function DashboardClient({
               <span className="absolute -top-2 -right-2 rounded-full bg-accent-500 px-2 py-0.5 text-[10px] font-bold text-dark-900">
                 Soon
               </span>
-            </button>
+            </span>
           </div>
         </section>
 
@@ -176,12 +172,12 @@ export default function DashboardClient({
               </p>
               <p className="text-xs text-dark-500">Upgrade to Premium for unlimited scans</p>
             </div>
-            <button
-              onClick={() => router.push("/premium")}
+            <Link
+              href="/premium"
               className="shrink-0 rounded-lg bg-accent-500/10 px-3 py-1.5 text-xs font-medium text-accent-400 hover:bg-accent-500/20 transition-colors"
             >
               Upgrade
-            </button>
+            </Link>
           </section>
         )}
 
@@ -195,12 +191,12 @@ export default function DashboardClient({
             <p className="text-xs text-dark-400 mb-4">
               Upgrade to Premium for unlimited scans and exclusive features
             </p>
-            <button
-              onClick={() => router.push("/premium")}
-              className="w-full rounded-xl bg-gradient-to-r from-accent-500 to-accent-600 py-2.5 text-sm font-bold text-dark-900 hover:opacity-90 transition-opacity"
+            <Link
+              href="/premium"
+              className="block w-full rounded-xl bg-gradient-to-r from-accent-500 to-accent-600 py-2.5 text-sm font-bold text-dark-900 hover:opacity-90 transition-opacity text-center"
             >
               Upgrade to Premium
-            </button>
+            </Link>
           </section>
         )}
 
@@ -209,13 +205,13 @@ export default function DashboardClient({
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-dark-50">Recent Scans</h3>
             {recentScans.length > 0 && (
-              <button
-                onClick={() => router.push("/history")}
+              <Link
+                href="/history"
                 className="flex items-center gap-1 text-sm text-primary-400 hover:text-primary-300 transition-colors"
               >
                 See All
                 <ChevronRight className="h-4 w-4" />
-              </button>
+              </Link>
             )}
           </div>
 
@@ -228,12 +224,12 @@ export default function DashboardClient({
               <p className="text-dark-400 text-sm">
                 Your first scan is just a tap away
               </p>
-              <button
-                onClick={() => router.push("/scan")}
+              <Link
+                href="/scan"
                 className="mt-2 rounded-xl bg-primary-500/10 px-5 py-2.5 text-sm font-medium text-primary-400 hover:bg-primary-500/20 transition-colors"
               >
                 Start Scanning
-              </button>
+              </Link>
             </div>
           )}
 
@@ -249,9 +245,9 @@ export default function DashboardClient({
                   : "badge-safe";
 
               return (
-                <button
+                <Link
                   key={scan.id}
-                  onClick={() => router.push(`/result?barcode=${encodeURIComponent(scan.barcode)}`)}
+                  href={`/result?barcode=${encodeURIComponent(scan.barcode)}`}
                   className="glass-card flex w-full items-center gap-4 p-4 hover:border-dark-600 transition-colors text-left"
                 >
                   {/* Health Score Circle */}
@@ -280,49 +276,15 @@ export default function DashboardClient({
 
                   {/* Chevron */}
                   <ChevronRight className="h-4 w-4 text-dark-600 shrink-0" />
-                </button>
+                </Link>
               );
             })}
           </div>
         </section>
       </main>
 
-      {/* ===== Bottom Navigation (Fixed) ===== */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-dark-800 bg-dark-900/90 backdrop-blur-xl pb-safe">
-        <div className="flex items-center justify-around py-2">
-          <button
-            onClick={() => router.push("/home")}
-            className="flex flex-col items-center gap-1 px-4 py-1"
-          >
-            <Home className="h-5 w-5 text-primary-500" />
-            <span className="text-[10px] font-medium text-primary-500">Home</span>
-          </button>
-
-          <button
-            onClick={() => router.push("/scan")}
-            className="flex flex-col items-center gap-1 px-4 py-1"
-          >
-            <ScanLine className="h-5 w-5 text-dark-500" />
-            <span className="text-[10px] font-medium text-dark-500">Scan</span>
-          </button>
-
-          <button
-            onClick={() => router.push("/history")}
-            className="flex flex-col items-center gap-1 px-4 py-1"
-          >
-            <Clock className="h-5 w-5 text-dark-500" />
-            <span className="text-[10px] font-medium text-dark-500">History</span>
-          </button>
-
-          <button
-            onClick={() => router.push("/profile")}
-            className="flex flex-col items-center gap-1 px-4 py-1"
-          >
-            <User className="h-5 w-5 text-dark-500" />
-            <span className="text-[10px] font-medium text-dark-500">Profile</span>
-          </button>
-        </div>
-      </nav>
+      {/* ===== Bottom Navigation ===== */}
+      <BottomNav />
     </div>
   );
 }
