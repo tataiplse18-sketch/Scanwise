@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { logoutAction } from "@/app/auth-actions";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -48,7 +48,6 @@ export default function ProfileClient({
   scanCount,
 }: ProfileClientProps) {
   const router = useRouter();
-  const supabase = createClient();
 
   const [loggingOut, setLoggingOut] = useState(false);
 
@@ -62,14 +61,14 @@ export default function ProfileClient({
 
   async function handleLogout() {
     setLoggingOut(true);
+    // Call the SERVER ACTION — signs out on the server (clears cookies)
+    // and redirects to /login. If redirect happens, we won't reach the
+    // line below.
     try {
-      await supabase.auth.signOut();
-      router.push("/login");
+      await logoutAction();
     } catch {
-      // Force redirect even if signOut fails
-      router.push("/login");
-    } finally {
-      setLoggingOut(false);
+      // If something goes wrong, force navigation to login
+      window.location.href = "/login";
     }
   }
 

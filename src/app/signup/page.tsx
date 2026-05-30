@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { signupAction } from "@/app/auth-actions";
 import { cn } from "@/lib/utils";
 import { Mail, Lock, Eye, EyeOff, ScanLine, Loader2 } from "lucide-react";
 
 export default function SignupPage() {
-  const supabase = createClient();
-
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,63 +17,47 @@ export default function SignupPage() {
   const [success, setSuccess] = useState(false);
   const [successEmail, setSuccessEmail] = useState("");
 
-  function validateForm(): string | null {
-    if (!fullName.trim()) {
-      return "Full name is required.";
-    }
-    if (password.length < 8) {
-      return "Password must be at least 8 characters long.";
-    }
-    if (password !== confirmPassword) {
-      return "Passwords do not match.";
-    }
-    return null;
-  }
-
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
 
-    const validationError = validateForm();
-    if (validationError) {
-      setError(validationError);
+    // Client-side validation (for instant feedback)
+    if (!fullName.trim()) {
+      setError("Full name is required.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
       return;
     }
 
     setLoading(true);
 
-    try {
-      const { error: signUpError, data } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName.trim(),
-          },
-        },
-      });
+    // Build FormData and call the SERVER ACTION
+    const formData = new FormData();
+    formData.append("fullName", fullName);
+    formData.append("email", email);
+    formData.append("password", password);
+    formData.append("confirmPassword", confirmPassword);
 
-      if (signUpError) {
-        setError(signUpError.message);
-        setLoading(false);
-        return;
-      }
+    const result = await signupAction(formData);
 
-      // Check if email confirmation is required
-      // If data.session exists, user is auto-confirmed and logged in
-      if (data.session) {
-        // Auto-confirmed — redirect to home
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        window.location.href = "/home";
-        return;
-      }
-
-      // Email confirmation required — show success message
-      setSuccessEmail(email);
-      setSuccess(true);
+    // If redirect("/home") was called inside the server action (auto-confirmed),
+    // we never reach this line — Next.js handles the redirect.
+    if (result?.error) {
+      setError(result.error);
       setLoading(false);
-    } catch {
-      setError("An unexpected error occurred. Please try again.");
+      return;
+    }
+
+    // Email confirmation required — show success message
+    if (result?.emailConfirmation) {
+      setSuccessEmail(result.email ?? email);
+      setSuccess(true);
       setLoading(false);
     }
   }
