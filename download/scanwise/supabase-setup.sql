@@ -115,6 +115,8 @@ CREATE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- 5. RPC function to increment scan count
+-- Drop first to avoid "cannot change return type" error if function exists with different signature
+DROP FUNCTION IF EXISTS public.increment_scan_count(UUID);
 CREATE OR REPLACE FUNCTION public.increment_scan_count(user_id UUID)
 RETURNS VOID AS $$
 BEGIN
