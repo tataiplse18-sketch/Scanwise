@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Mail, Lock, Eye, EyeOff, ScanLine, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
-  const router = useRouter();
   const supabase = createClient();
 
   const [email, setEmail] = useState("");
@@ -22,23 +20,37 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { error: signInError, data } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (signInError) {
         setError(signInError.message);
+        setLoading(false);
         return;
       }
 
+      // Verify session was actually created
+      if (!data.session) {
+        setError("Login failed. Please check your credentials and try again.");
+        setLoading(false);
+        return;
+      }
+
+      // Small delay to ensure auth cookies are fully written to browser
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       // Hard reload to sync auth cookies with server
+      // Don't call setLoading(false) after this — navigation is in progress
       window.location.href = "/home";
     } catch {
       setError("An unexpected error occurred. Please try again.");
-    } finally {
       setLoading(false);
     }
+    // NOTE: No finally block — we don't want to reset loading state
+    // if navigation is in progress, as that causes a re-render that
+    // can interrupt the redirect
   }
 
   return (

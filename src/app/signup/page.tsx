@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Mail, Lock, Eye, EyeOff, ScanLine, Loader2 } from "lucide-react";
 
 export default function SignupPage() {
-  const router = useRouter();
   const supabase = createClient();
 
   const [fullName, setFullName] = useState("");
@@ -19,6 +17,7 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [successEmail, setSuccessEmail] = useState("");
 
   function validateForm(): string | null {
     if (!fullName.trim()) {
@@ -46,7 +45,7 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { error: signUpError, data } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -58,15 +57,25 @@ export default function SignupPage() {
 
       if (signUpError) {
         setError(signUpError.message);
+        setLoading(false);
         return;
       }
 
-      // If email confirmation is OFF, user is auto-logged-in
-      // Hard reload to sync auth cookies with server
-      window.location.href = "/home";
+      // Check if email confirmation is required
+      // If data.session exists, user is auto-confirmed and logged in
+      if (data.session) {
+        // Auto-confirmed — redirect to home
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        window.location.href = "/home";
+        return;
+      }
+
+      // Email confirmation required — show success message
+      setSuccessEmail(email);
+      setSuccess(true);
+      setLoading(false);
     } catch {
       setError("An unexpected error occurred. Please try again.");
-    } finally {
       setLoading(false);
     }
   }
@@ -85,15 +94,15 @@ export default function SignupPage() {
             </h2>
             <p className="text-dark-400 text-sm leading-relaxed">
               We&apos;ve sent a verification link to{" "}
-              <span className="text-primary-400 font-medium">{email}</span>.
+              <span className="text-primary-400 font-medium">{successEmail}</span>.
               Please check your inbox and click the link to verify your account.
             </p>
-            <button
-              onClick={() => router.push("/login")}
-              className="w-full bg-primary-500 hover:bg-primary-600 text-white font-medium py-3 rounded-xl transition-colors mt-4"
+            <a
+              href="/login"
+              className="inline-flex w-full items-center justify-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-medium py-3 rounded-xl transition-colors mt-4"
             >
               Back to Login
-            </button>
+            </a>
           </div>
         </div>
       </main>
