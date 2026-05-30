@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
           getAll() {
             return request.cookies.getAll();
           },
-          setAll(cookiesToSet) {
+          setAll(cookiesToSet: Array<{ name: string; value: string; options?: Record<string, unknown> }>) {
             // Set cookies on both the request (for downstream) and response (for browser)
             cookiesToSet.forEach(({ name, value }) =>
               request.cookies.set(name, value)

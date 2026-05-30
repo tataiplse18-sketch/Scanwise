@@ -7,7 +7,7 @@ import {
   Home,
   Clock,
   User,
-  MagnifyingGlass,
+  Search,
   GitCompare,
   ShoppingBag,
   ChevronRight,
@@ -117,7 +117,7 @@ export default function DashboardClient({
               className="glass-card flex flex-col items-center gap-2 p-4 hover:border-primary-500/30 transition-colors"
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-500/10">
-                <MagnifyingGlass className="h-5 w-5 text-primary-400" />
+                <Search className="h-5 w-5 text-primary-400" />
               </div>
               <span className="text-xs font-medium text-dark-300">Search</span>
             </button>

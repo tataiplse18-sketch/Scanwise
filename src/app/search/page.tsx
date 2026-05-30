@@ -5,12 +5,11 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
-  MagnifyingGlass,
+  Search,
   X,
   Package,
   Loader2,
   Clock,
-  Search,
 } from "lucide-react";
 
 // ============================================================
@@ -155,7 +154,7 @@ export default function SearchPage() {
 
           {/* Search Input */}
           <form onSubmit={handleSubmit} className="flex-1 relative">
-            <MagnifyingGlass className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-dark-500" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-dark-500" />
             <input
               type="text"
               value={query}
@@ -327,7 +326,7 @@ export default function SearchPage() {
             {recentSearches.length === 0 && (
               <div className="flex flex-col items-center py-20 text-center">
                 <div className="flex h-20 w-20 items-center justify-center rounded-full bg-dark-800 mb-4">
-                  <MagnifyingGlass className="h-10 w-10 text-dark-600" />
+                  <Search className="h-10 w-10 text-dark-600" />
                 </div>
                 <h2 className="text-lg font-semibold text-dark-200 mb-2">
                   Search for any food product
