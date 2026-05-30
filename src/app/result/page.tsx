@@ -95,7 +95,7 @@ function calculateHealthScore(product: OFFProduct): {
     carbs: Math.round((nutriments.carbohydrates_100g || 0) * 10) / 10,
     sugar: Math.round((nutriments.sugars_100g || 0) * 10) / 10,
     fat: Math.round((nutriments.fat_100g || 0) * 10) / 10,
-    saturated_fat: Math.round((nutriments["saturated-fat_100g || 0"] || 0) * 10) / 10,
+    saturated_fat: Math.round((nutriments["saturated-fat_100g"] || 0) * 10) / 10,
     fiber: Math.round((nutriments.fiber_100g || 0) * 10) / 10,
     sodium: Math.round((nutriments.sodium_100g || 0) * 10) / 10,
   };
