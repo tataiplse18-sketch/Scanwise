@@ -35,6 +35,18 @@ export default async function HomePage() {
     .order("scanned_at", { ascending: false })
     .limit(5);
 
+  // Fetch scans from the last 7 days for weekly report
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
+
+  const { data: weeklyScans } = await supabase
+    .from("scans")
+    .select("health_score, scanned_at")
+    .eq("user_id", user.id)
+    .gte("scanned_at", sevenDaysAgo.toISOString())
+    .order("scanned_at", { ascending: true });
+
   return (
     <DashboardClient
       profile={profile ?? {
@@ -46,6 +58,7 @@ export default async function HomePage() {
         allergens: [],
       }}
       recentScans={recentScans ?? []}
+      weeklyScans={weeklyScans ?? []}
     />
   );
 }

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { incrementScanCountAction } from "@/app/auth-actions";
+import AnimatedScoreCircle from "@/components/AnimatedScoreCircle";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -531,8 +532,6 @@ function ResultContent() {
 
   // ===== Full Result Display =====
   const scoreInfo = getHealthScoreInfo(result.score);
-  const circumference = 2 * Math.PI * 58;
-  const scoreOffset = circumference - (result.score / 100) * circumference;
 
   const safeIngredients = result.ingredients.filter((i) => i.risk_level === "safe");
   const moderateIngredients = result.ingredients.filter((i) => i.risk_level === "moderate");
@@ -584,55 +583,13 @@ function ResultContent() {
           </div>
         </section>
 
-        {/* ===== 2. Health Score Circle ===== */}
-        <section className="flex flex-col items-center py-4">
-          <div className="relative">
-            <svg width="140" height="140" className="-rotate-90">
-              {/* Background circle */}
-              <circle
-                cx="70"
-                cy="70"
-                r="58"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="8"
-                className="text-dark-800"
-              />
-              {/* Score circle with animation */}
-              <circle
-                cx="70"
-                cy="70"
-                r="58"
-                fill="none"
-                stroke={scoreInfo.color}
-                strokeWidth="8"
-                strokeLinecap="round"
-                strokeDasharray={circumference}
-                strokeDashoffset={scoreOffset}
-                className="score-ring"
-                style={{ transition: "stroke-dashoffset 1.5s ease-in-out" }}
-              />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span
-                className="text-3xl font-bold"
-                style={{ color: scoreInfo.color }}
-              >
-                {result.score}
-              </span>
-              <span className="text-xs text-dark-400">/100</span>
-            </div>
-          </div>
-          <p
-            className="mt-3 text-lg font-semibold capitalize"
-            style={{ color: scoreInfo.color }}
-          >
-            {result.riskLevel}
-          </p>
-          <p className="text-xs text-dark-500 text-center max-w-xs mt-1">
-            {scoreInfo.description}
-          </p>
-        </section>
+        {/* ===== 2. Health Score Animated Circle ===== */}
+        <AnimatedScoreCircle
+          score={result.score}
+          riskLevel={result.riskLevel}
+          color={scoreInfo.color}
+          description={scoreInfo.description}
+        />
 
         {/* ===== 3. Risk Level Badge ===== */}
         <div className="flex justify-center">

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import InstallBanner from "@/components/InstallBanner";
 import "./globals.css";
 
 const inter = Inter({
@@ -21,11 +22,17 @@ export const metadata: Metadata = {
     "AI food analysis",
   ],
   authors: [{ name: "ScanWise" }],
+  manifest: "/manifest.json",
   openGraph: {
     title: "ScanWise - AI Food Scanner",
     description:
       "Scan any food barcode and know what you're really eating",
     type: "website",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "ScanWise",
   },
 };
 
@@ -34,7 +41,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#0f172a",
+  themeColor: "#0a0a0f",
 };
 
 export default function RootLayout({
@@ -44,10 +51,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
+      <head>
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+      </head>
       <body
         className={`${inter.variable} font-sans antialiased min-h-screen bg-dark-900 text-dark-50`}
       >
         {children}
+        <InstallBanner />
       </body>
     </html>
   );

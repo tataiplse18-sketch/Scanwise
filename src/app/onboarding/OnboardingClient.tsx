@@ -21,6 +21,7 @@ interface OnboardingClientProps {
 // Dietary preference options
 const DIETARY_OPTIONS = [
   { id: "veg", label: "Vegetarian", emoji: "🥬", desc: "No meat or fish" },
+  { id: "eggetarian", label: "Eggetarian", emoji: "🥚", desc: "Veg + eggs, no meat" },
   { id: "non-veg", label: "Non-Vegetarian", emoji: "🍗", desc: "All food types" },
   { id: "vegan", label: "Vegan", emoji: "🌱", desc: "No animal products" },
   { id: "jain", label: "Jain", emoji: "🙏", desc: "No root vegetables" },

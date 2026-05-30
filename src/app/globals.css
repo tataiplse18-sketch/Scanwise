@@ -124,6 +124,22 @@
     }
   }
 
+  /* Slide up animation for install banner */
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   /* Pulse animation for scan button */
   .pulse-glow {
     animation: pulseGlow 2s ease-in-out infinite;

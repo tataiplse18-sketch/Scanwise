@@ -39,6 +39,7 @@ interface ProfileClientProps {
 
 const DIETARY_LABELS: Record<string, { label: string; emoji: string }> = {
   veg: { label: "Vegetarian", emoji: "🥬" },
+  eggetarian: { label: "Eggetarian", emoji: "🥚" },
   "non-veg": { label: "Non-Vegetarian", emoji: "🍗" },
   vegan: { label: "Vegan", emoji: "🌱" },
   jain: { label: "Jain", emoji: "🙏" },

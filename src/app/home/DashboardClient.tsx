@@ -13,6 +13,7 @@ import {
   Clock,
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
+import WeeklyReportCard from "@/components/WeeklyReportCard";
 import type { ScanResult } from "@/types";
 import { getHealthScoreInfo } from "@/types";
 
@@ -27,6 +28,7 @@ interface DashboardClientProps {
     allergens?: string[];
   };
   recentScans: ScanResult[];
+  weeklyScans: { health_score: number; scanned_at: string }[];
 }
 
 function getScoreColor(score: number): string {
@@ -53,6 +55,7 @@ function formatRelativeTime(dateString: string): string {
 export default function DashboardClient({
   profile,
   recentScans,
+  weeklyScans,
 }: DashboardClientProps) {
   const displayName = profile.full_name || "User";
   const firstName = displayName.split(" ")[0];
@@ -161,6 +164,9 @@ export default function DashboardClient({
             </span>
           </div>
         </section>
+
+        {/* Weekly Health Report */}
+        <WeeklyReportCard weeklyScans={weeklyScans} />
 
         {/* Free Scan Limit Warning */}
         {!isPremium && freeScansLeft <= 2 && freeScansLeft > 0 && (
