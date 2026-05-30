@@ -61,7 +61,9 @@ export default function SignupPage() {
         return;
       }
 
-      setSuccess(true);
+      // If email confirmation is OFF, user is auto-logged-in
+      // Hard reload to sync auth cookies with server
+      window.location.href = "/home";
     } catch {
       setError("An unexpected error occurred. Please try again.");
     } finally {

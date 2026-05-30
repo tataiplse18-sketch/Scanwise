@@ -32,7 +32,8 @@ export default function LoginPage() {
         return;
       }
 
-      router.push("/home");
+      // Hard reload to sync auth cookies with server
+      window.location.href = "/home";
     } catch {
       setError("An unexpected error occurred. Please try again.");
     } finally {
