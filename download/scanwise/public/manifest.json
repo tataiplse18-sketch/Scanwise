@@ -1,0 +1,26 @@
+{
+  "name": "ScanWise",
+  "short_name": "ScanWise",
+  "description": "Scan any food barcode and know what you're really eating. Get instant health scores, ingredient analysis, and AI-powered verdicts.",
+  "start_url": "/home",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["health", "food", "lifestyle"],
+  "screenshots": []
+}

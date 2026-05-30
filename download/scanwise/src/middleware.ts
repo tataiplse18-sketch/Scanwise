@@ -1,45 +1,39 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-/**
- * Supabase auth middleware for Next.js App Router.
- *
- * This middleware runs on every matched request and:
- * 1. Creates a Supabase server client with cookie access
- * 2. Refreshes the user's auth session by calling getUser()
- * 3. Ensures cookies are synced between the request and response
- *
- * This ensures that the user's authentication state is always fresh
- * and consistent across server components and API routes.
- */
+// In-memory session cache for faster middleware
+const sessionCache = new Map<string, { userId: string; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+// Clean stale cache entries every 10 minutes
+setInterval(() => {
+  const now = Date.now();
+  const keysToDelete: string[] = [];
+  sessionCache.forEach((value, key) => {
+    if (now - value.timestamp > CACHE_TTL) {
+      keysToDelete.push(key);
+    }
+  });
+  keysToDelete.forEach((key) => sessionCache.delete(key));
+}, 10 * 60 * 1000);
+
+// Public routes that don't require auth
+const PUBLIC_ROUTES = ["/login", "/signup", "/forgot-password", "/reset-password", "/auth/callback"];
+
 export async function middleware(request: NextRequest) {
-  // Create a baseline response that passes through the request
   let supabaseResponse = NextResponse.next({
     request,
   });
 
-  // Create Supabase server client with cookie management
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        /**
-         * Retrieves all cookies from the incoming request.
-         * Used by Supabase to read the current auth session.
-         */
         getAll() {
           return request.cookies.getAll();
         },
-
-        /**
-         * Sets cookies on both the Supabase response and the request.
-         *
-         * Setting on the request ensures that downstream Server Components
-         * and Route Handlers see the updated cookies. Setting on the response
-         * ensures the browser receives the updated cookies.
-         */
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: { name: string; value: string; options?: any }[]) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
@@ -54,26 +48,50 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // IMPORTANT: Calling getUser() refreshes the auth session.
-  // Without this, the session can become stale and the user
-  // will appear logged out even if they have a valid session.
-  await supabase.auth.getUser();
+  // Check session cache first
+  const allCookies = request.cookies.getAll();
+  const cacheKey = allCookies
+    .filter((c) => c.name.startsWith("sb-"))
+    .map((c) => c.value)
+    .join("|");
+
+  let userId: string | null = null;
+  const cached = sessionCache.get(cacheKey);
+
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    userId = cached.userId;
+  } else {
+    // Refresh session
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    userId = user?.id || null;
+
+    if (userId) {
+      sessionCache.set(cacheKey, { userId, timestamp: Date.now() });
+    }
+  }
+
+  // Auth redirect logic
+  const pathname = request.nextUrl.pathname;
+  const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
+  const isLanding = pathname === "/";
+
+  if (!userId && !isPublicRoute && !isLanding) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/login";
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  if (userId && isPublicRoute) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/home";
+    return NextResponse.redirect(redirectUrl);
+  }
 
   return supabaseResponse;
 }
 
-/**
- * Middleware matcher configuration.
- *
- * Excludes static assets and image files from middleware processing
- * to avoid unnecessary auth checks on public resources.
- *
- * Pattern explanation:
- * - _next/static  → Next.js static files (JS, CSS chunks)
- * - _next/image   → Next.js image optimization endpoint
- * - favicon.ico   → Browser favicon request
- * - *.(svg|png|jpg|jpeg|gif|webp) → Static image files
- */
 export const config = {
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
