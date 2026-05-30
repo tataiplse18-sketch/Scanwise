@@ -39,7 +39,7 @@ export async function middleware(request: NextRequest) {
          * and Route Handlers see the updated cookies. Setting on the response
          * ensures the browser receives the updated cookies.
          */
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: Array<{ name: string; value: string; options?: Record<string, unknown> }>) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );

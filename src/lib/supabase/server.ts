@@ -36,7 +36,7 @@ export async function createClient() {
          * Server Components where the response has already started streaming.
          * This is expected behavior and should not throw an error.
          */
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: Array<{ name: string; value: string; options?: Record<string, unknown> }>) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
