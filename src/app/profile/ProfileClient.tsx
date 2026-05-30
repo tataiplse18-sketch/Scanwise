@@ -20,6 +20,8 @@ import {
   Calendar,
   Scan,
   Loader2,
+  Leaf,
+  Zap,
 } from "lucide-react";
 
 interface ProfileClientProps {
@@ -28,12 +30,35 @@ interface ProfileClientProps {
     full_name: string | null;
     email: string;
     avatar_url: string | null;
-    free_scans_remaining: number;
+    scan_count: number;
     is_premium: boolean;
+    dietary_pref: string | null;
+    allergens: string[];
+    onboarding_done: boolean;
     created_at: string;
   };
   scanCount: number;
 }
+
+const DIETARY_LABELS: Record<string, { label: string; emoji: string }> = {
+  veg: { label: "Vegetarian", emoji: "🥬" },
+  "non-veg": { label: "Non-Vegetarian", emoji: "🍗" },
+  vegan: { label: "Vegan", emoji: "🌱" },
+  jain: { label: "Jain", emoji: "🙏" },
+};
+
+const ALLERGEN_LABELS: Record<string, string> = {
+  peanuts: "🥜 Peanuts",
+  dairy: "🥛 Dairy",
+  gluten: "🌾 Gluten",
+  soy: "🫘 Soy",
+  shellfish: "🦐 Shellfish",
+  eggs: "🥚 Eggs",
+  "tree-nuts": "🌰 Tree Nuts",
+  fish: "🐟 Fish",
+  sesame: "⚪ Sesame",
+  mustard: "🟡 Mustard",
+};
 
 function formatMemberSince(dateString: string): string {
   const date = new Date(dateString);
@@ -59,16 +84,17 @@ export default function ProfileClient({
     .toUpperCase()
     .slice(0, 2);
 
+  const freeScansLeft = profile.is_premium ? Infinity : Math.max(0, 5 - (profile.scan_count ?? 0));
+  const dietaryInfo = profile.dietary_pref ? DIETARY_LABELS[profile.dietary_pref] : null;
+
   async function handleLogout() {
     setLoggingOut(true);
     try {
       const result = await logoutAction();
       if (result?.success) {
-        // Full page reload → clears session cookies properly
         window.location.href = "/login";
       }
     } catch {
-      // If something goes wrong, force navigation to login
       window.location.href = "/login";
     }
   }
@@ -90,12 +116,9 @@ export default function ProfileClient({
       <main className="px-4 py-6 pb-28 space-y-6">
         {/* ===== User Info Card ===== */}
         <section className="glass-card p-6 flex flex-col items-center text-center">
-          {/* Avatar */}
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary-500/10 text-primary-400 text-2xl font-bold mb-4">
             {initials}
           </div>
-
-          {/* Name & Email */}
           <h2 className="text-lg font-bold text-dark-50">{displayName}</h2>
           <p className="text-sm text-dark-400 mt-1">{profile.email}</p>
 
@@ -107,7 +130,14 @@ export default function ProfileClient({
             </span>
           )}
 
-          {/* Edit Profile Button (Coming Soon) */}
+          {/* Dietary Preference Badge */}
+          {dietaryInfo && (
+            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-primary-500/10 px-3 py-1 text-xs font-medium text-primary-400">
+              <Leaf className="h-3 w-3" />
+              {dietaryInfo.emoji} {dietaryInfo.label}
+            </span>
+          )}
+
           <div className="relative mt-4 group">
             <button
               disabled
@@ -130,11 +160,13 @@ export default function ProfileClient({
             <span className="text-[10px] text-dark-400 mt-0.5">Total Scans</span>
           </div>
           <div className="glass-card flex flex-col items-center p-4">
-            <ScanLine className="h-5 w-5 text-accent-400 mb-2" />
+            <Zap className="h-5 w-5 text-accent-400 mb-2" />
             <span className="text-xl font-bold text-dark-50">
-              {profile.free_scans_remaining}
+              {profile.is_premium ? "∞" : freeScansLeft}
             </span>
-            <span className="text-[10px] text-dark-400 mt-0.5">Free Left</span>
+            <span className="text-[10px] text-dark-400 mt-0.5">
+              {profile.is_premium ? "Unlimited" : "Free Left"}
+            </span>
           </div>
           <div className="glass-card flex flex-col items-center p-4">
             <Calendar className="h-5 w-5 text-dark-400 mb-2" />
@@ -145,13 +177,32 @@ export default function ProfileClient({
           </div>
         </section>
 
+        {/* ===== Allergens Section ===== */}
+        {profile.allergens && profile.allergens.length > 0 && (
+          <section className="glass-card p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <Shield className="h-4 w-4 text-accent-400" />
+              <h3 className="text-sm font-semibold text-dark-200">Your Allergens</h3>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {profile.allergens.map((allergen) => (
+                <span
+                  key={allergen}
+                  className="inline-flex items-center gap-1 rounded-xl bg-accent-500/10 border border-accent-500/20 px-3 py-1.5 text-xs font-medium text-accent-400"
+                >
+                  {ALLERGEN_LABELS[allergen] || allergen}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* ===== Settings Section ===== */}
         <section>
           <h3 className="text-xs font-semibold text-dark-500 uppercase tracking-wider mb-3 px-1">
             Settings
           </h3>
           <div className="glass-card divide-y divide-dark-700">
-            {/* Dietary Restrictions */}
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500/10">
@@ -161,13 +212,12 @@ export default function ProfileClient({
                   <p className="text-sm font-medium text-dark-200">
                     Dietary Restrictions
                   </p>
-                  <p className="text-xs text-dark-500">Manage your preferences</p>
+                  <p className="text-xs text-dark-500">{dietaryInfo ? `${dietaryInfo.emoji} ${dietaryInfo.label}` : "Not set"}</p>
                 </div>
               </div>
               <ChevronRight className="h-4 w-4 text-dark-600" />
             </div>
 
-            {/* Allergen Alerts */}
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-500/10">
@@ -177,13 +227,14 @@ export default function ProfileClient({
                   <p className="text-sm font-medium text-dark-200">
                     Allergen Alerts
                   </p>
-                  <p className="text-xs text-dark-500">Set your allergens</p>
+                  <p className="text-xs text-dark-500">
+                    {profile.allergens?.length ?? 0} allergen{profile.allergens?.length !== 1 ? "s" : ""} set
+                  </p>
                 </div>
               </div>
               <ChevronRight className="h-4 w-4 text-dark-600" />
             </div>
 
-            {/* Theme */}
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-dark-600/30">
@@ -215,10 +266,13 @@ export default function ProfileClient({
               dietary recommendations.
             </p>
             <button
-              disabled
-              className="w-full rounded-xl bg-accent-500/10 py-2.5 text-sm font-medium text-accent-400 cursor-not-allowed"
+              onClick={() => router.push("/premium")}
+              className="w-full rounded-xl bg-gradient-to-r from-accent-500 to-accent-600 py-2.5 text-sm font-bold text-dark-900 hover:opacity-90 transition-opacity"
             >
-              Coming Soon
+              <span className="flex items-center justify-center gap-2">
+                <Crown className="h-4 w-4" />
+                Upgrade - ₹199/month
+              </span>
             </button>
           </section>
         )}

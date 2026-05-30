@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { incrementScanCountAction } from "@/app/auth-actions";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -392,6 +393,13 @@ function ResultContent() {
             ai_verdict: analysis.aiVerdict,
           });
           setSaved(true);
+
+          // Increment scan count in profiles table
+          try {
+            await incrementScanCountAction();
+          } catch {
+            // Non-critical: count increment failed silently
+          }
         }
       } catch {
         // Non-critical: scan saved locally even if Supabase fails

@@ -11,17 +11,21 @@ import {
   GitCompare,
   ShoppingBag,
   ChevronRight,
+  Crown,
+  Zap,
 } from "lucide-react";
 import type { ScanResult } from "@/types";
-import { getHealthScoreInfo, HEALTH_SCORE_RANGES } from "@/types";
+import { getHealthScoreInfo } from "@/types";
 
 interface DashboardClientProps {
   profile: {
     id?: string;
     full_name: string | null;
     avatar_url?: string | null;
-    free_scans_remaining: number;
+    scan_count?: number;
     is_premium: boolean;
+    dietary_pref?: string | null;
+    allergens?: string[];
   };
   recentScans: ScanResult[];
 }
@@ -55,8 +59,9 @@ export default function DashboardClient({
 
   const displayName = profile.full_name || "User";
   const firstName = displayName.split(" ")[0];
-  const freeScans = profile.free_scans_remaining;
   const isPremium = profile.is_premium;
+  const scanCount = profile.scan_count ?? 0;
+  const freeScansLeft = isPremium ? Infinity : Math.max(0, 5 - scanCount);
 
   return (
     <div className="min-h-screen bg-dark-900">
@@ -65,12 +70,19 @@ export default function DashboardClient({
         <h1 className="text-lg font-bold">
           <span className="gradient-text">ScanWise</span>
         </h1>
-        <button
-          onClick={() => router.push("/profile")}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-500/10 text-primary-400 text-sm font-semibold hover:bg-primary-500/20 transition-colors"
-        >
-          {displayName.charAt(0).toUpperCase()}
-        </button>
+        <div className="flex items-center gap-2">
+          {isPremium && (
+            <span className="rounded-full bg-accent-500/15 px-2.5 py-0.5 text-[10px] font-bold text-accent-400 flex items-center gap-1">
+              <Crown className="h-3 w-3" /> PRO
+            </span>
+          )}
+          <button
+            onClick={() => router.push("/profile")}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-500/10 text-primary-400 text-sm font-semibold hover:bg-primary-500/20 transition-colors"
+          >
+            {displayName.charAt(0).toUpperCase()}
+          </button>
+        </div>
       </header>
 
       {/* ===== Scrollable Content ===== */}
@@ -84,13 +96,20 @@ export default function DashboardClient({
             What would you like to scan today?
           </p>
           <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-accent-500/10 px-3 py-1.5">
-            <span className="text-accent-400 text-sm font-medium">
-              {freeScans} free scans left
-            </span>
-            {isPremium && (
-              <span className="rounded-full bg-primary-500/20 px-2 py-0.5 text-xs font-medium text-primary-400">
-                PRO
-              </span>
+            {isPremium ? (
+              <>
+                <Crown className="h-3.5 w-3.5 text-accent-400" />
+                <span className="text-accent-400 text-sm font-medium">
+                  Unlimited scans
+                </span>
+              </>
+            ) : (
+              <>
+                <Zap className="h-3.5 w-3.5 text-accent-400" />
+                <span className="text-accent-400 text-sm font-medium">
+                  {freeScansLeft} free scan{freeScansLeft !== 1 ? "s" : ""} left
+                </span>
+              </>
             )}
           </div>
         </section>
@@ -146,6 +165,44 @@ export default function DashboardClient({
             </button>
           </div>
         </section>
+
+        {/* Free Scan Limit Warning */}
+        {!isPremium && freeScansLeft <= 2 && freeScansLeft > 0 && (
+          <section className="glass-card border-accent-500/20 p-4 mb-6 flex items-center gap-3">
+            <Zap className="h-5 w-5 text-accent-400 shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-dark-200">
+                Only {freeScansLeft} free scan{freeScansLeft !== 1 ? "s" : ""} left!
+              </p>
+              <p className="text-xs text-dark-500">Upgrade to Premium for unlimited scans</p>
+            </div>
+            <button
+              onClick={() => router.push("/premium")}
+              className="shrink-0 rounded-lg bg-accent-500/10 px-3 py-1.5 text-xs font-medium text-accent-400 hover:bg-accent-500/20 transition-colors"
+            >
+              Upgrade
+            </button>
+          </section>
+        )}
+
+        {/* Paywall - All free scans used */}
+        {!isPremium && freeScansLeft === 0 && (
+          <section className="glass-card border-accent-500/30 p-5 mb-6 text-center">
+            <Crown className="h-8 w-8 text-accent-400 mx-auto mb-3" />
+            <h3 className="text-sm font-semibold text-dark-100 mb-1">
+              You&apos;ve used all 5 free scans!
+            </h3>
+            <p className="text-xs text-dark-400 mb-4">
+              Upgrade to Premium for unlimited scans and exclusive features
+            </p>
+            <button
+              onClick={() => router.push("/premium")}
+              className="w-full rounded-xl bg-gradient-to-r from-accent-500 to-accent-600 py-2.5 text-sm font-bold text-dark-900 hover:opacity-90 transition-opacity"
+            >
+              Upgrade to Premium
+            </button>
+          </section>
+        )}
 
         {/* Recent Scans */}
         <section>

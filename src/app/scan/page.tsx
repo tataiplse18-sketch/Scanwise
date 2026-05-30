@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Html5Qrcode } from "html5-qrcode";
+import { checkScanLimitAction } from "@/app/auth-actions";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Loader2, Keyboard, X, Zap } from "lucide-react";
+import { ArrowLeft, Loader2, Keyboard, X, Zap, Crown, Lock } from "lucide-react";
 
 const SCANNER_REGION_ID = "scanwise-reader";
 
@@ -18,6 +19,8 @@ export default function ScanPage() {
   const [manualBarcode, setManualBarcode] = useState("");
   const [showManual, setShowManual] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
+  const [scanLocked, setScanLocked] = useState(false);
+  const [checkingLimit, setCheckingLimit] = useState(true);
 
   const startScanner = useCallback(async () => {
     if (isScanningRef.current) return;
@@ -121,15 +124,33 @@ export default function ScanPage() {
     }
   };
 
-  // Start scanner on mount
+  // Check scan limit on mount, then start scanner if allowed
   useEffect(() => {
-    // Small delay to ensure DOM element exists
-    const timer = setTimeout(() => {
-      startScanner();
-    }, 300);
+    async function checkLimitAndStart() {
+      try {
+        const result = await checkScanLimitAction();
+        if (!result.canScan) {
+          setScanLocked(true);
+          setCheckingLimit(false);
+          return;
+        }
+        setCheckingLimit(false);
+        // Small delay to ensure DOM element exists
+        setTimeout(() => {
+          startScanner();
+        }, 300);
+      } catch {
+        setCheckingLimit(false);
+        // If check fails, allow scan (graceful fallback)
+        setTimeout(() => {
+          startScanner();
+        }, 300);
+      }
+    }
+
+    checkLimitAndStart();
 
     return () => {
-      clearTimeout(timer);
       // Cleanup scanner on unmount
       if (scannerRef.current && isScanningRef.current) {
         try {
@@ -142,6 +163,62 @@ export default function ScanPage() {
       }
     };
   }, [startScanner]);
+
+  // Paywall screen — all free scans used
+  if (scanLocked) {
+    return (
+      <div className="min-h-screen bg-dark-900 flex flex-col">
+        <header className="flex items-center justify-between px-4 py-3 pt-safe border-b border-dark-800 bg-dark-900/80 backdrop-blur-xl">
+          <button
+            onClick={() => router.push("/home")}
+            className="flex h-9 w-9 items-center justify-center rounded-xl bg-dark-800 text-dark-400 hover:text-dark-200 transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <h1 className="text-sm font-semibold text-dark-200">Scan Barcode</h1>
+          <div className="w-9" />
+        </header>
+
+        <div className="flex-1 flex items-center justify-center px-4">
+          <div className="glass-card p-8 text-center max-w-sm w-full">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-accent-500/10 mb-5">
+              <Lock className="h-10 w-10 text-accent-400" />
+            </div>
+            <h2 className="text-xl font-bold text-dark-50 mb-2">
+              All free scans used!
+            </h2>
+            <p className="text-dark-400 text-sm mb-6">
+              You&apos;ve used all 5 free scans. Upgrade to Premium for unlimited scanning and exclusive features.
+            </p>
+            <button
+              onClick={() => router.push("/premium")}
+              className="w-full rounded-xl bg-gradient-to-r from-accent-500 to-accent-600 py-3 text-sm font-bold text-dark-900 hover:opacity-90 transition-opacity mb-3"
+            >
+              <span className="flex items-center justify-center gap-2">
+                <Crown className="h-4 w-4" />
+                Upgrade to Premium
+              </span>
+            </button>
+            <button
+              onClick={() => router.push("/home")}
+              className="w-full rounded-xl bg-dark-800 py-3 text-sm font-medium text-dark-400 hover:text-dark-200 transition-colors"
+            >
+              Back to Home
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading state while checking scan limit
+  if (checkingLimit) {
+    return (
+      <div className="min-h-screen bg-dark-900 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary-400" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-dark-900 flex flex-col">

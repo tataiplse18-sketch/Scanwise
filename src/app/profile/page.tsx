@@ -14,7 +14,7 @@ export default async function ProfilePage() {
   }
 
   const { data: profile } = await supabase
-    .from("users")
+    .from("profiles")
     .select("*")
     .eq("id", user.id)
     .single();
@@ -32,8 +32,11 @@ export default async function ProfilePage() {
           full_name: user.user_metadata?.full_name ?? null,
           email: user.email ?? "",
           avatar_url: null,
-          free_scans_remaining: 5,
+          scan_count: 0,
           is_premium: false,
+          dietary_pref: null,
+          allergens: [],
+          onboarding_done: false,
           created_at: user.created_at,
         }
       }

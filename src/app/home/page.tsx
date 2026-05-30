@@ -15,12 +15,17 @@ export default async function HomePage() {
     redirect("/login");
   }
 
-  // Fetch user profile from users table
+  // Fetch user profile from profiles table
   const { data: profile } = await supabase
-    .from("users")
+    .from("profiles")
     .select("*")
     .eq("id", user.id)
     .single();
+
+  // If onboarding not done, redirect to onboarding flow
+  if (!profile?.onboarding_done) {
+    redirect("/onboarding");
+  }
 
   // Fetch last 5 scans ordered by most recent
   const { data: recentScans } = await supabase
@@ -32,7 +37,14 @@ export default async function HomePage() {
 
   return (
     <DashboardClient
-      profile={profile ?? { full_name: user.user_metadata?.full_name ?? null, free_scans_remaining: 5, is_premium: false }}
+      profile={profile ?? {
+        full_name: user.user_metadata?.full_name ?? null,
+        free_scans_remaining: Math.max(0, 5 - (profile?.scan_count ?? 0)),
+        is_premium: false,
+        scan_count: 0,
+        dietary_pref: null,
+        allergens: [],
+      }}
       recentScans={recentScans ?? []}
     />
   );
