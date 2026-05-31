@@ -18,6 +18,7 @@ import {
   Loader2,
   Leaf,
   Zap,
+  Trophy,
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 
@@ -33,8 +34,11 @@ interface ProfileClientProps {
     allergens: string[];
     onboarding_done: boolean;
     created_at: string;
+    xp_points?: number;
+    level?: number;
   };
   scanCount: number;
+  achievementsCount?: number;
 }
 
 const DIETARY_LABELS: Record<string, { label: string; emoji: string }> = {
@@ -69,6 +73,7 @@ function formatMemberSince(dateString: string): string {
 export default function ProfileClient({
   profile,
   scanCount,
+  achievementsCount = 0,
 }: ProfileClientProps) {
   const [loggingOut, setLoggingOut] = useState(false);
 
@@ -155,15 +160,11 @@ export default function ProfileClient({
             <span className="text-xl font-bold text-dark-50">{scanCount}</span>
             <span className="text-[10px] text-dark-400 mt-0.5">Total Scans</span>
           </div>
-          <div className="glass-card flex flex-col items-center p-4">
-            <Zap className="h-5 w-5 text-accent-400 mb-2" />
-            <span className="text-xl font-bold text-dark-50">
-              {profile.is_premium ? "∞" : freeScansLeft}
-            </span>
-            <span className="text-[10px] text-dark-400 mt-0.5">
-              {profile.is_premium ? "Unlimited" : "Free Left"}
-            </span>
-          </div>
+          <Link href="/achievements" className="glass-card flex flex-col items-center p-4 hover:border-primary-500/30 transition-colors">
+            <Trophy className="h-5 w-5 text-accent-400 mb-2" />
+            <span className="text-xl font-bold text-dark-50">{achievementsCount}</span>
+            <span className="text-[10px] text-dark-400 mt-0.5">Badges</span>
+          </Link>
           <div className="glass-card flex flex-col items-center p-4">
             <Calendar className="h-5 w-5 text-dark-400 mb-2" />
             <span className="text-xs font-bold text-dark-50">
@@ -199,6 +200,21 @@ export default function ProfileClient({
             Settings
           </h3>
           <div className="glass-card divide-y divide-dark-700">
+            <Link href="/achievements" className="flex items-center justify-between p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-500/10">
+                  <Trophy className="h-4 w-4 text-accent-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-dark-200">
+                    Achievements
+                  </p>
+                  <p className="text-xs text-dark-500">{achievementsCount} badge{achievementsCount !== 1 ? "s" : ""} unlocked</p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-dark-600" />
+            </Link>
+
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500/10">

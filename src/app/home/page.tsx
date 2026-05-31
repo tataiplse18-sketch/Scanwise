@@ -56,6 +56,8 @@ export default async function HomePage() {
         scan_count: 0,
         dietary_pref: null,
         allergens: [],
+        xp_points: 0,
+        level: 1,
       }}
       recentScans={recentScans ?? []}
       weeklyScans={weeklyScans ?? []}

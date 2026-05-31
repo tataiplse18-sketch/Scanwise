@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Home, ScanLine, Clock, User } from "lucide-react";
+import { Home, ScanLine, Trophy, Clock, User } from "lucide-react";
 
 interface NavItem {
   href: string;
@@ -14,6 +14,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: "/home", label: "Home", icon: Home },
   { href: "/scan", label: "Scan", icon: ScanLine },
+  { href: "/achievements", label: "Badges", icon: Trophy },
   { href: "/history", label: "History", icon: Clock },
   { href: "/profile", label: "Profile", icon: User },
 ];

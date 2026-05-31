@@ -24,6 +24,12 @@ export default async function ProfilePage() {
     .select("*", { count: "exact", head: true })
     .eq("user_id", user.id);
 
+  const { count: achievementsCount } = await supabase
+    .from("user_achievements")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .eq("is_unlocked", true);
+
   return (
     <ProfileClient
       profile={
@@ -41,6 +47,7 @@ export default async function ProfilePage() {
         }
       }
       scanCount={scanCount ?? 0}
+      achievementsCount={achievementsCount ?? 0}
     />
   );
 }

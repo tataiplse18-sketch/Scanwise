@@ -246,3 +246,323 @@ export async function incrementScanCountAction(): Promise<{
 
   return { success: true, scanCount: data as number };
 }
+
+// ──────────────────────────────────────────────
+// ACHIEVEMENT ACTIONS
+// ──────────────────────────────────────────────
+
+export async function checkAchievementsAction(): Promise<{
+  success: boolean;
+  newUnlocks?: Array<{
+    id: string;
+    title: string;
+    icon: string;
+    points: number;
+    description: string;
+  }>;
+  error?: string;
+}> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  try {
+    // We need to call the client-side achievements logic,
+    // but since this is a server action, we replicate the
+    // core logic here using the server supabase client.
+
+    // 1. Fetch all achievement definitions
+    const { data: allAchievements, error: achError } = await supabase
+      .from("achievements")
+      .select("*");
+
+    if (achError || !allAchievements || allAchievements.length === 0) {
+      return { success: true, newUnlocks: [] };
+    }
+
+    // 2. Fetch user's current achievements
+    const { data: userAchs } = await supabase
+      .from("user_achievements")
+      .select("*")
+      .eq("user_id", user.id);
+
+    const unlockedSet = new Set<string>();
+    (userAchs || []).forEach((ua: { achievement_id: string; is_unlocked: boolean }) => {
+      if (ua.is_unlocked) unlockedSet.add(ua.achievement_id);
+    });
+
+    // 3. Fetch progress data
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("scan_count, is_premium, current_streak, shares_count, compares_count")
+      .eq("id", user.id)
+      .single();
+
+    const { count: healthyCount } = await supabase
+      .from("scans")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("health_score", 61);
+
+    const { count: junkCount } = await supabase
+      .from("scans")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .lt("health_score", 30);
+
+    const scanCount = profile?.scan_count ?? 0;
+    const isPremium = profile?.is_premium ?? false;
+    const currentStreak = profile?.current_streak ?? 0;
+    const sharesCount = profile?.shares_count ?? 0;
+    const comparesCount = profile?.compares_count ?? 0;
+
+    // 4. Check each achievement
+    const newlyUnlocked: Array<{
+      id: string;
+      title: string;
+      icon: string;
+      points: number;
+      description: string;
+    }> = [];
+
+    for (const ach of allAchievements) {
+      if (unlockedSet.has(ach.id)) continue;
+
+      let progress = 0;
+      switch (ach.category) {
+        case "scans":
+          progress = scanCount;
+          break;
+        case "health":
+          if (ach.id.startsWith("healthy_")) progress = healthyCount ?? 0;
+          else if (ach.id.startsWith("avoid_junk_")) progress = junkCount ?? 0;
+          break;
+        case "streak":
+          progress = currentStreak;
+          break;
+        case "social":
+          if (ach.id.startsWith("compare_")) progress = comparesCount;
+          else if (ach.id.startsWith("share_")) progress = sharesCount;
+          break;
+        case "premium":
+          progress = isPremium ? 1 : 0;
+          break;
+      }
+
+      if (progress >= ach.requirement) {
+        // Unlock this achievement
+        const { data: existingUA } = await supabase
+          .from("user_achievements")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("achievement_id", ach.id)
+          .single();
+
+        if (existingUA) {
+          await supabase
+            .from("user_achievements")
+            .update({
+              progress: ach.requirement,
+              is_unlocked: true,
+              unlocked_at: new Date().toISOString(),
+            })
+            .eq("id", existingUA.id);
+        } else {
+          await supabase.from("user_achievements").insert({
+            user_id: user.id,
+            achievement_id: ach.id,
+            progress: ach.requirement,
+            is_unlocked: true,
+            unlocked_at: new Date().toISOString(),
+          });
+        }
+
+        // Add XP to profile
+        const { data: profXP } = await supabase
+          .from("profiles")
+          .select("xp_points, level")
+          .eq("id", user.id)
+          .single();
+
+        if (profXP) {
+          const newXP = (profXP.xp_points ?? 0) + ach.points;
+          const newLevel = Math.floor(newXP / 100) + 1;
+          await supabase
+            .from("profiles")
+            .update({ xp_points: newXP, level: newLevel })
+            .eq("id", user.id);
+        }
+
+        newlyUnlocked.push({
+          id: ach.id,
+          title: ach.title,
+          icon: ach.icon,
+          points: ach.points,
+          description: ach.description,
+        });
+      } else if (progress > 0) {
+        // Update progress
+        const { data: existingUA } = await supabase
+          .from("user_achievements")
+          .select("id, progress")
+          .eq("user_id", user.id)
+          .eq("achievement_id", ach.id)
+          .single();
+
+        if (existingUA) {
+          if (existingUA.progress !== progress) {
+            await supabase
+              .from("user_achievements")
+              .update({ progress })
+              .eq("id", existingUA.id);
+          }
+        } else {
+          await supabase.from("user_achievements").insert({
+            user_id: user.id,
+            achievement_id: ach.id,
+            progress,
+            is_unlocked: false,
+          });
+        }
+      }
+    }
+
+    revalidatePath("/", "layout");
+
+    return { success: true, newUnlocks: newlyUnlocked };
+  } catch (err) {
+    console.error("Achievement check failed:", err);
+    return { success: false, error: "Failed to check achievements" };
+  }
+}
+
+export async function updateStreakAction(): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  try {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("last_scan_date, current_streak, longest_streak")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile) return { success: false, error: "Profile not found" };
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const lastScan = profile.last_scan_date
+      ? new Date(profile.last_scan_date)
+      : null;
+
+    let newStreak = 1;
+    let newLongest = profile.longest_streak ?? 0;
+
+    if (lastScan) {
+      lastScan.setHours(0, 0, 0, 0);
+      const diffDays = Math.floor(
+        (today.getTime() - lastScan.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      if (diffDays === 0) {
+        return { success: true };
+      } else if (diffDays === 1) {
+        newStreak = (profile.current_streak ?? 0) + 1;
+      } else {
+        newStreak = 1;
+      }
+    }
+
+    newLongest = Math.max(newLongest, newStreak);
+
+    await supabase
+      .from("profiles")
+      .update({
+        current_streak: newStreak,
+        longest_streak: newLongest,
+        last_scan_date: today.toISOString().split("T")[0],
+      })
+      .eq("id", user.id);
+
+    return { success: true };
+  } catch {
+    return { success: false, error: "Failed to update streak" };
+  }
+}
+
+export async function incrementShareCountAction(): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("shares_count")
+    .eq("id", user.id)
+    .single();
+
+  const newCount = (profile?.shares_count ?? 0) + 1;
+
+  await supabase
+    .from("profiles")
+    .update({ shares_count: newCount })
+    .eq("id", user.id);
+
+  return { success: true };
+}
+
+export async function incrementCompareCountAction(): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: "Not authenticated" };
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("compares_count")
+    .eq("id", user.id)
+    .single();
+
+  const newCount = (profile?.compares_count ?? 0) + 1;
+
+  await supabase
+    .from("profiles")
+    .update({ compares_count: newCount })
+    .eq("id", user.id);
+
+  return { success: true };
+}

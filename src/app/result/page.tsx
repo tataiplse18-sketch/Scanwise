@@ -22,6 +22,8 @@ import {
 import { showToast } from "@/components/Toast";
 import { NOVA_GROUP_LABELS, NOVA_GROUP_COLORS, getHealthScoreInfo, getHealthScoreLabel } from "@/types";
 import type { ScanResult, NovaGroup, HealthScoreLabel } from "@/types";
+import { checkAndUnlockAchievements, updateStreak } from "@/lib/achievements";
+import { incrementShareCountAction, incrementCompareCountAction } from "@/app/auth-actions";
 
 // ============================================================
 // Healthy Alternatives Map
@@ -256,6 +258,24 @@ function ResultContent() {
             setCompareSaved(true);
           }
         }
+
+        // Check achievements and update streak after scan
+        if (user) {
+          try {
+            await updateStreak(user.id);
+            const newUnlocks = await checkAndUnlockAchievements(user.id);
+            if (newUnlocks.length > 0) {
+              const first = newUnlocks[0];
+              showToast({
+                message: `${first.icon} Achievement Unlocked: ${first.title}!`,
+                type: "success",
+                duration: 4000,
+              });
+            }
+          } catch {
+            // Non-critical: achievement check failed silently
+          }
+        }
       } catch {
         // Fallback
       } finally {
@@ -295,6 +315,9 @@ function ResultContent() {
       });
       localStorage.setItem("scanwise_compare", JSON.stringify(compareList));
       setCompareSaved(true);
+
+      // Track compare achievement
+      incrementCompareCountAction().catch(() => {});
 
       if (compareList.length === 1) {
         showToast({ message: "Product added! Scan another to compare", type: "success" });

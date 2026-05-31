@@ -11,11 +11,12 @@ import {
   Crown,
   Zap,
   Clock,
+  Trophy,
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 import WeeklyReportCard from "@/components/WeeklyReportCard";
 import type { ScanResult } from "@/types";
-import { getHealthScoreInfo } from "@/types";
+import { getHealthScoreInfo, getLevelFromXP, getXPForNextLevel } from "@/types";
 
 interface DashboardClientProps {
   profile: {
@@ -26,6 +27,8 @@ interface DashboardClientProps {
     is_premium: boolean;
     dietary_pref?: string | null;
     allergens?: string[];
+    xp_points?: number;
+    level?: number;
   };
   recentScans: ScanResult[];
   weeklyScans: { health_score: number; scanned_at: string }[];
@@ -62,6 +65,12 @@ export default function DashboardClient({
   const isPremium = profile.is_premium;
   const scanCount = profile.scan_count ?? 0;
   const freeScansLeft = isPremium ? Infinity : Math.max(0, 5 - scanCount);
+  const totalXP = profile.xp_points ?? 0;
+  const userLevel = profile.level ?? getLevelFromXP(totalXP);
+  const xpForCurrentLevel = (userLevel - 1) * 100;
+  const xpForNextLevel = getXPForNextLevel(userLevel);
+  const xpInCurrentLevel = totalXP - xpForCurrentLevel;
+  const xpPercent = xpForNextLevel > 0 ? Math.min(Math.round((xpInCurrentLevel / xpForNextLevel) * 100), 100) : 0;
 
   return (
     <div className="min-h-screen bg-dark-900">
@@ -112,6 +121,28 @@ export default function DashboardClient({
               </>
             )}
           </div>
+
+          {/* Level + XP Progress */}
+          <Link
+            href="/achievements"
+            className="mt-3 flex items-center gap-3 rounded-xl bg-dark-800/60 border border-dark-700/50 px-3 py-2 hover:border-primary-500/20 transition-colors"
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500/10">
+              <Trophy className="h-4 w-4 text-primary-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-medium text-dark-200">Level {userLevel}</span>
+                <span className="text-[10px] text-dark-500">{xpInCurrentLevel}/{xpForNextLevel} XP</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-dark-700 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-primary-500 to-primary-400 transition-all duration-500"
+                  style={{ width: `${xpPercent}%` }}
+                />
+              </div>
+            </div>
+          </Link>
         </section>
 
         {/* Scan Button - Main CTA */}

@@ -193,3 +193,61 @@ export const NOVA_GROUP_COLORS: Record<NovaGroup, string> = {
   3: "#f59e0b",
   4: "#ef4444",
 };
+
+// ============================================================
+// Achievement Types
+// ============================================================
+
+export type AchievementCategory = "scans" | "health" | "streak" | "social" | "premium";
+export type AchievementTier = "bronze" | "silver" | "gold" | "platinum";
+
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  category: AchievementCategory;
+  tier: AchievementTier;
+  requirement: number;
+  points: number;
+  created_at: string;
+}
+
+export interface UserAchievement {
+  id: string;
+  user_id: string;
+  achievement_id: string;
+  progress: number;
+  is_unlocked: boolean;
+  unlocked_at: string | null;
+  achievement?: Achievement;
+}
+
+export interface AchievementWithProgress extends Achievement {
+  progress: number;
+  is_unlocked: boolean;
+  unlocked_at: string | null;
+}
+
+export const TIER_COLORS: Record<AchievementTier, string> = {
+  bronze: "#CD7F32",
+  silver: "#C0C0C0",
+  gold: "#FFD700",
+  platinum: "#E5E4E2",
+};
+
+export const CATEGORY_LABELS: Record<AchievementCategory, string> = {
+  scans: "Scans",
+  health: "Health",
+  streak: "Streaks",
+  social: "Social",
+  premium: "Premium",
+};
+
+export function getLevelFromXP(xp: number): number {
+  return Math.floor(xp / 100) + 1;
+}
+
+export function getXPForNextLevel(level: number): number {
+  return level * 100;
+}
