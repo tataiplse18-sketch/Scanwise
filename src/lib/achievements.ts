@@ -115,13 +115,14 @@ export async function checkAndUnlockAchievements(
       }
 
       // Add XP to profile
-      await supabase.rpc("increment_xp", {
+      const { error: rpcError } = await supabase.rpc("increment_xp", {
         user_id: userId,
         xp_amount: ach.points,
-      }).catch(() => {
+      });
+      if (rpcError) {
         // Fallback if RPC not available: manual update
         incrementXPManual(userId, ach.points);
-      });
+      }
 
       newlyUnlocked.push({
         id: ach.id,

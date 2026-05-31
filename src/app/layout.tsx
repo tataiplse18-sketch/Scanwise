@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import InstallBanner from "@/components/InstallBanner";
+import ToastContainer from "@/components/Toast";
 import "./globals.css";
 
 const inter = Inter({
@@ -58,6 +59,7 @@ export default function RootLayout({
         className={`${inter.variable} font-sans antialiased min-h-screen bg-dark-900 text-dark-50`}
       >
         {children}
+        <ToastContainer />
         <InstallBanner />
       </body>
     </html>

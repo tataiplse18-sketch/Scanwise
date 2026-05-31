@@ -13,14 +13,13 @@ import {
   AlertTriangle,
   Leaf,
   Flame,
-  Package,
   ChevronDown,
   ChevronUp,
   GitCompare,
   Info,
 } from "lucide-react";
 import { showToast } from "@/components/Toast";
-import { NOVA_GROUP_LABELS, NOVA_GROUP_COLORS, getHealthScoreInfo, getHealthScoreLabel } from "@/types";
+import { NOVA_GROUP_LABELS, NOVA_GROUP_COLORS, getHealthScoreInfo } from "@/types";
 import type { ScanResult, NovaGroup, HealthScoreLabel } from "@/types";
 import { checkAndUnlockAchievements, updateStreak } from "@/lib/achievements";
 import { incrementShareCountAction, incrementCompareCountAction } from "@/app/auth-actions";
@@ -406,12 +405,9 @@ function ResultContent() {
           {compareSaved ? "Added" : "Compare"}
         </button>
         {compareSaved && (
-          <Link
-            href="/compare"
-            className="flex items-center gap-1 text-xs text-primary-400 hover:text-primary-300"
-          >
-            View <ChevronDown className="h-3 w-3" />
-          </Link>
+          <span className="flex items-center gap-1 text-xs text-primary-400">
+            <Info className="h-3 w-3" /> Ready to compare
+          </span>
         )}
       </div>
 
