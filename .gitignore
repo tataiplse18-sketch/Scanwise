@@ -26,3 +26,15 @@ debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# uploads
+upload/
+
+# bun
+bun.lock
+
+# skills
+skills/
+
+# download
+download/

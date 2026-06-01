@@ -13,7 +13,6 @@ interface WeeklyReportCardProps {
   weeklyScans: WeeklyScan[];
 }
 
-// Day labels
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default function WeeklyReportCard({ weeklyScans }: WeeklyReportCardProps) {
@@ -22,10 +21,8 @@ export default function WeeklyReportCard({ weeklyScans }: WeeklyReportCardProps)
       return null;
     }
 
-    // Group scans by day of week
     const dayMap = new Map<number, { scores: number[]; label: string }>();
 
-    // Initialize all 7 days
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
@@ -33,7 +30,6 @@ export default function WeeklyReportCard({ weeklyScans }: WeeklyReportCardProps)
       dayMap.set(dayOfWeek, { scores: [], label: DAY_LABELS[dayOfWeek] });
     }
 
-    // Populate with scan data
     weeklyScans.forEach((scan) => {
       const date = new Date(scan.scanned_at);
       const dayOfWeek = date.getDay();
@@ -43,7 +39,6 @@ export default function WeeklyReportCard({ weeklyScans }: WeeklyReportCardProps)
       }
     });
 
-    // Build chart data
     const chartData = Array.from(dayMap.values()).map((entry) => ({
       label: entry.label,
       avgScore: entry.scores.length > 0
@@ -52,19 +47,16 @@ export default function WeeklyReportCard({ weeklyScans }: WeeklyReportCardProps)
       count: entry.scores.length,
     }));
 
-    // Summary stats
     const totalScans = weeklyScans.length;
     const avgScore = Math.round(
       weeklyScans.reduce((sum, s) => sum + s.health_score, 0) / totalScans
     );
 
-    // Best day (highest avg score)
     const bestDay = chartData.reduce(
       (best, day) => (day.avgScore > best.avgScore ? day : best),
       chartData[0]
     );
 
-    // Trend: compare first half vs second half
     const midPoint = Math.floor(weeklyScans.length / 2);
     const firstHalf = weeklyScans.slice(0, midPoint);
     const secondHalf = weeklyScans.slice(midPoint);
@@ -90,21 +82,20 @@ export default function WeeklyReportCard({ weeklyScans }: WeeklyReportCardProps)
     };
   }, [weeklyScans]);
 
-  // Empty state
   if (!report) {
     return (
       <section className="glass-card p-5 mb-6">
         <div className="flex items-center gap-2 mb-4">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500/10">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500/8">
             <BarChart3 className="h-4 w-4 text-primary-400" />
           </div>
-          <h3 className="text-sm font-semibold text-dark-200">Weekly Health Report</h3>
+          <h3 className="text-sm font-semibold text-dark-300">Weekly Health Report</h3>
         </div>
         <div className="flex flex-col items-center py-6 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-dark-700 mb-3">
-            <BarChart3 className="h-7 w-7 text-dark-500" />
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/[0.03] mb-3">
+            <BarChart3 className="h-7 w-7 text-dark-600" />
           </div>
-          <p className="text-dark-400 text-sm">
+          <p className="text-dark-500 text-sm">
             Start scanning to see your weekly report!
           </p>
         </div>
@@ -119,10 +110,10 @@ export default function WeeklyReportCard({ weeklyScans }: WeeklyReportCardProps)
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500/10">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500/8">
             <BarChart3 className="h-4 w-4 text-primary-400" />
           </div>
-          <h3 className="text-sm font-semibold text-dark-200">Weekly Health Report</h3>
+          <h3 className="text-sm font-semibold text-dark-300">Weekly Health Report</h3>
         </div>
         <div className="flex items-center gap-1.5">
           {report.trend === "improving" && (
@@ -142,9 +133,9 @@ export default function WeeklyReportCard({ weeklyScans }: WeeklyReportCardProps)
               report.trend === "stable" && "text-accent-400"
             )}
           >
-            {report.trend === "improving" && "Improving 📈"}
-            {report.trend === "declining" && "Declining 📉"}
-            {report.trend === "stable" && "Stable ➡️"}
+            {report.trend === "improving" && "Improving"}
+            {report.trend === "declining" && "Declining"}
+            {report.trend === "stable" && "Stable"}
           </span>
         </div>
       </div>
@@ -158,23 +149,21 @@ export default function WeeklyReportCard({ weeklyScans }: WeeklyReportCardProps)
 
           return (
             <div key={i} className="flex-1 flex flex-col items-center gap-1">
-              {/* Bar */}
               <div className="w-full relative" style={{ height: "100px" }}>
                 <div
                   className={cn(
                     "absolute bottom-0 left-1/2 -translate-x-1/2 w-5 rounded-t-md transition-all duration-500",
                     day.count > 0
                       ? "bg-gradient-to-t from-primary-500 to-primary-400"
-                      : "bg-dark-700"
+                      : "bg-white/[0.04]"
                   )}
                   style={{ height: `${height}px` }}
                 />
               </div>
-              {/* Day label */}
               <span
                 className={cn(
                   "text-[10px] font-medium",
-                  day.count > 0 ? "text-dark-300" : "text-dark-600"
+                  day.count > 0 ? "text-dark-400" : "text-dark-600"
                 )}
               >
                 {day.label}
@@ -185,7 +174,7 @@ export default function WeeklyReportCard({ weeklyScans }: WeeklyReportCardProps)
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-3 gap-3 pt-3 border-t border-dark-700">
+      <div className="grid grid-cols-3 gap-3 pt-3 border-t border-white/[0.04]">
         <div className="text-center">
           <p className="text-lg font-bold text-dark-50">{report.totalScans}</p>
           <p className="text-[10px] text-dark-500">Total Scans</p>

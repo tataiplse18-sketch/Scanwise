@@ -17,8 +17,8 @@ import {
   Scan,
   Loader2,
   Leaf,
-  Zap,
   Trophy,
+  Settings,
 } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
 
@@ -85,7 +85,6 @@ export default function ProfileClient({
     .toUpperCase()
     .slice(0, 2);
 
-  const freeScansLeft = profile.is_premium ? Infinity : Math.max(0, 5 - (profile.scan_count ?? 0));
   const dietaryInfo = profile.dietary_pref ? DIETARY_LABELS[profile.dietary_pref] : null;
 
   async function handleLogout() {
@@ -102,38 +101,38 @@ export default function ProfileClient({
 
   return (
     <div className="min-h-screen bg-dark-900">
-      {/* ===== Top Bar ===== */}
-      <header className="sticky top-0 z-50 flex items-center justify-between px-4 py-3 border-b border-dark-800 bg-dark-900/80 backdrop-blur-xl">
+      {/* Top Bar */}
+      <header className="sticky top-0 z-50 flex items-center justify-between px-4 py-3 border-b border-white/[0.04] bg-dark-900/80 backdrop-blur-xl">
         <Link
           href="/home"
-          className="flex h-9 w-9 items-center justify-center rounded-xl bg-dark-800 text-dark-400 hover:text-dark-200 transition-colors"
+          className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.04] text-dark-400 hover:text-dark-200 transition-colors"
         >
           <ArrowLeft className="h-5 w-5" />
         </Link>
-        <h1 className="text-sm font-semibold text-dark-200">Profile</h1>
+        <h1 className="text-sm font-semibold text-dark-300">Profile</h1>
         <div className="w-9" />
       </header>
 
-      <main className="px-4 py-6 pb-28 space-y-6">
-        {/* ===== User Info Card ===== */}
-        <section className="glass-card p-6 flex flex-col items-center text-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary-500/10 text-primary-400 text-2xl font-bold mb-4">
+      <main className="px-4 py-6 pb-28 space-y-5">
+        {/* User Info Card */}
+        <section className="glass-card-elevated p-6 flex flex-col items-center text-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary-500/8 text-primary-400 text-2xl font-bold mb-4 border border-primary-500/10">
             {initials}
           </div>
           <h2 className="text-lg font-bold text-dark-50">{displayName}</h2>
-          <p className="text-sm text-dark-400 mt-1">{profile.email}</p>
+          <p className="text-sm text-dark-500 mt-1">{profile.email}</p>
 
           {/* Premium Badge */}
           {profile.is_premium && (
-            <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-accent-500/15 px-3 py-1 text-xs font-medium text-accent-400">
+            <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-accent-500/10 border border-accent-500/15 px-3 py-1 text-xs font-medium text-accent-400">
               <Crown className="h-3 w-3" />
               Premium Member
             </span>
           )}
 
-          {/* Dietary Preference Badge */}
+          {/* Dietary Preference */}
           {dietaryInfo && (
-            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-primary-500/10 px-3 py-1 text-xs font-medium text-primary-400">
+            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-primary-500/8 border border-primary-500/10 px-3 py-1 text-xs font-medium text-primary-400">
               <Leaf className="h-3 w-3" />
               {dietaryInfo.emoji} {dietaryInfo.label}
             </span>
@@ -142,7 +141,7 @@ export default function ProfileClient({
           <div className="relative mt-4 group">
             <button
               disabled
-              className="flex items-center gap-2 rounded-xl bg-dark-800 px-5 py-2.5 text-sm font-medium text-dark-400 cursor-not-allowed"
+              className="flex items-center gap-2 rounded-xl bg-white/[0.04] border border-white/[0.06] px-5 py-2.5 text-sm font-medium text-dark-500 cursor-not-allowed"
             >
               <Edit3 className="h-4 w-4" />
               Edit Profile
@@ -153,28 +152,28 @@ export default function ProfileClient({
           </div>
         </section>
 
-        {/* ===== Stats Row ===== */}
+        {/* Stats Row */}
         <section className="grid grid-cols-3 gap-3">
           <div className="glass-card flex flex-col items-center p-4">
             <Scan className="h-5 w-5 text-primary-400 mb-2" />
             <span className="text-xl font-bold text-dark-50">{scanCount}</span>
-            <span className="text-[10px] text-dark-400 mt-0.5">Total Scans</span>
+            <span className="text-[10px] text-dark-500 mt-0.5">Total Scans</span>
           </div>
-          <Link href="/achievements" className="glass-card flex flex-col items-center p-4 hover:border-primary-500/30 transition-colors">
+          <Link href="/achievements" className="glass-card flex flex-col items-center p-4 hover:border-white/[0.1] transition-colors">
             <Trophy className="h-5 w-5 text-accent-400 mb-2" />
             <span className="text-xl font-bold text-dark-50">{achievementsCount}</span>
-            <span className="text-[10px] text-dark-400 mt-0.5">Badges</span>
+            <span className="text-[10px] text-dark-500 mt-0.5">Badges</span>
           </Link>
           <div className="glass-card flex flex-col items-center p-4">
-            <Calendar className="h-5 w-5 text-dark-400 mb-2" />
+            <Calendar className="h-5 w-5 text-dark-500 mb-2" />
             <span className="text-xs font-bold text-dark-50">
               {formatMemberSince(profile.created_at)}
             </span>
-            <span className="text-[10px] text-dark-400 mt-0.5">Member Since</span>
+            <span className="text-[10px] text-dark-500 mt-0.5">Member Since</span>
           </div>
         </section>
 
-        {/* ===== Allergens Section ===== */}
+        {/* Allergens Section */}
         {profile.allergens && profile.allergens.length > 0 && (
           <section className="glass-card p-5">
             <div className="flex items-center gap-2 mb-3">
@@ -185,7 +184,7 @@ export default function ProfileClient({
               {profile.allergens.map((allergen) => (
                 <span
                   key={allergen}
-                  className="inline-flex items-center gap-1 rounded-xl bg-accent-500/10 border border-accent-500/20 px-3 py-1.5 text-xs font-medium text-accent-400"
+                  className="inline-flex items-center gap-1 rounded-xl bg-accent-500/8 border border-accent-500/15 px-3 py-1.5 text-xs font-medium text-accent-400"
                 >
                   {ALLERGEN_LABELS[allergen] || allergen}
                 </span>
@@ -194,15 +193,15 @@ export default function ProfileClient({
           </section>
         )}
 
-        {/* ===== Settings Section ===== */}
+        {/* Settings Section */}
         <section>
-          <h3 className="text-xs font-semibold text-dark-500 uppercase tracking-wider mb-3 px-1">
+          <h3 className="text-[10px] font-semibold text-dark-500 uppercase tracking-widest mb-3 px-1">
             Settings
           </h3>
-          <div className="glass-card divide-y divide-dark-700">
+          <div className="glass-card divide-y divide-white/[0.04]">
             <Link href="/achievements" className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-500/10">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-500/8">
                   <Trophy className="h-4 w-4 text-accent-400" />
                 </div>
                 <div>
@@ -217,7 +216,7 @@ export default function ProfileClient({
 
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500/10">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500/8">
                   <Shield className="h-4 w-4 text-primary-400" />
                 </div>
                 <div>
@@ -232,7 +231,7 @@ export default function ProfileClient({
 
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-500/10">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-500/8">
                   <Bell className="h-4 w-4 text-accent-400" />
                 </div>
                 <div>
@@ -249,53 +248,56 @@ export default function ProfileClient({
 
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-dark-600/30">
-                  <Moon className="h-4 w-4 text-dark-300" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.03]">
+                  <Moon className="h-4 w-4 text-dark-400" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-dark-200">Theme</p>
                   <p className="text-xs text-dark-500">Currently: Dark</p>
                 </div>
               </div>
-              <span className="rounded-full bg-primary-500/15 px-2.5 py-0.5 text-xs font-medium text-primary-400">
+              <span className="rounded-full bg-primary-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-primary-400">
                 Active
               </span>
             </div>
           </div>
         </section>
 
-        {/* ===== Upgrade Card (if not premium) ===== */}
+        {/* Upgrade Card */}
         {!profile.is_premium && (
-          <section className="glass-card p-5 border-accent-500/20">
+          <section className="glass-card-elevated p-5 border-accent-500/15">
             <div className="flex items-center gap-3 mb-3">
-              <Crown className="h-5 w-5 text-accent-400" />
-              <h3 className="text-sm font-semibold text-dark-200">
-                Upgrade to Premium
-              </h3>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-500/8">
+                <Crown className="h-5 w-5 text-accent-400" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-dark-200">
+                  Upgrade to Premium
+                </h3>
+                <p className="text-xs text-dark-500">
+                  Unlimited scans & advanced features
+                </p>
+              </div>
             </div>
-            <p className="text-xs text-dark-400 mb-4">
-              Get unlimited scans, advanced ingredient analysis, and personalized
-              dietary recommendations.
-            </p>
             <Link
               href="/premium"
               className="block w-full rounded-xl bg-gradient-to-r from-accent-500 to-accent-600 py-2.5 text-sm font-bold text-dark-900 hover:opacity-90 transition-opacity text-center"
             >
               <span className="flex items-center justify-center gap-2">
                 <Crown className="h-4 w-4" />
-                Upgrade - ₹199/month
+                Upgrade — ₹199/month
               </span>
             </Link>
           </section>
         )}
 
-        {/* ===== Logout Button ===== */}
+        {/* Logout Button */}
         <button
           onClick={handleLogout}
           disabled={loggingOut}
           className={cn(
-            "flex w-full items-center justify-center gap-2 rounded-xl bg-danger-500/10 py-3.5 text-sm font-medium text-danger-400 transition-colors",
-            "hover:bg-danger-500/15",
+            "flex w-full items-center justify-center gap-2 rounded-xl bg-danger-500/8 border border-danger-500/12 py-3.5 text-sm font-medium text-danger-400 transition-all duration-200",
+            "hover:bg-danger-500/12",
             "disabled:opacity-50 disabled:cursor-not-allowed"
           )}
         >
@@ -313,7 +315,6 @@ export default function ProfileClient({
         </button>
       </main>
 
-      {/* ===== Bottom Navigation ===== */}
       <BottomNav />
     </div>
   );

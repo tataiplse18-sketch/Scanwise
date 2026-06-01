@@ -24,10 +24,7 @@ import type { ScanResult, NovaGroup, HealthScoreLabel } from "@/types";
 import { checkAndUnlockAchievements, updateStreak } from "@/lib/achievements";
 import { incrementShareCountAction, incrementCompareCountAction } from "@/app/auth-actions";
 
-// ============================================================
 // Healthy Alternatives Map
-// ============================================================
-
 const ALTERNATIVES_MAP: Record<string, Array<{ name: string; reason: string; estimatedScore: number }>> = {
   chips: [
     { name: "Makhana (Fox Nuts)", reason: "Low calorie, high protein snack", estimatedScore: 82 },
@@ -121,7 +118,6 @@ function ResultContent() {
         }
 
         if (scanId) {
-          // Load scan result from database by ID
           const { data: scanData } = await supabase
             .from("scans")
             .select("*")
@@ -132,7 +128,6 @@ function ResultContent() {
           if (scanData) {
             setScan(scanData as ScanResult);
 
-            // Load product info
             const { data: productData } = await supabase
               .from("products")
               .select("name, brand, image_url")
@@ -146,7 +141,6 @@ function ResultContent() {
             }
           }
         } else if (barcodeParam) {
-          // Fallback: fetch from Open Food Facts directly (no DB save)
           const response = await fetch(
             `https://world.openfoodfacts.org/api/v0/product/${barcodeParam}.json`
           );
@@ -158,7 +152,6 @@ function ResultContent() {
             setProductBrand(product.brands || "");
             setProductImage(product.image_url || null);
 
-            // Build a scan-like object from the API data
             const nutriments = product.nutriments || {};
             const additives = product.additives_tags || [];
             const highRisk = ["e102", "e110", "e120", "e129", "e211", "e220", "e250", "e320", "e621", "e951"];
@@ -176,7 +169,6 @@ function ResultContent() {
               };
             });
 
-            // Calculate health score
             let score = 70;
             const novaGroup = product.nova_group || 4;
             if (novaGroup === 4) score -= 25;
@@ -238,7 +230,6 @@ function ResultContent() {
           }
         }
 
-        // Load user profile for allergens and dietary pref
         const { data: profile } = await supabase
           .from("profiles")
           .select("allergens, dietary_pref")
@@ -250,7 +241,6 @@ function ResultContent() {
           setDietaryPref(profile.dietary_pref);
         }
 
-        // Check if already in comparison
         if (scanId) {
           const compareList = JSON.parse(localStorage.getItem("scanwise_compare") || "[]");
           if (compareList.some((item: any) => item.id === scanId)) {
@@ -258,7 +248,6 @@ function ResultContent() {
           }
         }
 
-        // Check achievements and update streak after scan
         if (user) {
           try {
             await updateStreak(user.id);
@@ -272,7 +261,7 @@ function ResultContent() {
               });
             }
           } catch {
-            // Non-critical: achievement check failed silently
+            // Non-critical
           }
         }
       } catch {
@@ -290,7 +279,6 @@ function ResultContent() {
     const compareList: any[] = JSON.parse(localStorage.getItem("scanwise_compare") || "[]");
 
     if (compareSaved) {
-      // Remove from comparison
       const filtered = compareList.filter((item: any) => item.id !== scan.id);
       localStorage.setItem("scanwise_compare", JSON.stringify(filtered));
       setCompareSaved(false);
@@ -315,7 +303,6 @@ function ResultContent() {
       localStorage.setItem("scanwise_compare", JSON.stringify(compareList));
       setCompareSaved(true);
 
-      // Track compare achievement
       incrementCompareCountAction().catch(() => {});
 
       if (compareList.length === 1) {
@@ -329,7 +316,7 @@ function ResultContent() {
   if (loading) {
     return (
       <main className="min-h-screen bg-dark-900 pb-24 flex items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-3 border-primary-500/30 border-t-primary-500" />
+        <div className="h-10 w-10 animate-spin rounded-full border-3 border-primary-500/20 border-t-primary-500" />
       </main>
     );
   }
@@ -337,7 +324,9 @@ function ResultContent() {
   if (!scan) {
     return (
       <main className="min-h-screen bg-dark-900 pb-24 flex flex-col items-center justify-center px-4">
-        <AlertTriangle className="mb-4 h-12 w-12 text-accent-400" />
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-accent-500/8 mb-4">
+          <AlertTriangle className="h-8 w-8 text-accent-400" />
+        </div>
         <h2 className="text-lg font-semibold text-dark-50">Scan Not Found</h2>
         <p className="mt-2 text-sm text-dark-400">This scan result doesn&apos;t exist or you don&apos;t have access.</p>
         <Link
@@ -350,7 +339,7 @@ function ResultContent() {
     );
   }
 
-  const novaColor = NOVA_GROUP_COLORS[scan.nova_group as NovaGroup] || "#64748b";
+  const novaColor = NOVA_GROUP_COLORS[scan.nova_group as NovaGroup] || "#71717a";
 
   return (
     <main className="min-h-screen bg-dark-900 pb-24">
@@ -358,25 +347,25 @@ function ResultContent() {
       <div className="flex items-center gap-3 px-4 pt-6 pb-4">
         <button
           onClick={() => router.back()}
-          className="rounded-xl bg-dark-800/80 p-2 text-dark-400 hover:text-dark-200 transition-colors"
+          className="rounded-xl bg-white/[0.04] p-2 text-dark-400 hover:text-dark-200 transition-colors"
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div className="flex-1 min-w-0">
           <h1 className="truncate text-lg font-bold text-dark-50">{productName || "Product"}</h1>
           {productBrand && (
-            <p className="truncate text-xs text-dark-400">{productBrand}</p>
+            <p className="truncate text-xs text-dark-500">{productBrand}</p>
           )}
         </div>
       </div>
 
       {/* Product Image */}
       {productImage && (
-        <div className="mx-4 mb-4 flex justify-center">
+        <div className="mx-4 mb-6 flex justify-center">
           <img
             src={productImage}
             alt={productName}
-            className="h-32 w-32 rounded-2xl border border-dark-700/50 object-cover"
+            className="h-32 w-32 rounded-2xl border border-white/[0.06] object-cover shadow-lg"
           />
         </div>
       )}
@@ -387,7 +376,7 @@ function ResultContent() {
       </div>
 
       {/* Action Buttons */}
-      <div className="mx-4 mb-4 flex items-center gap-3">
+      <div className="mx-4 mb-5 flex items-center gap-2">
         <ShareButton
           productName={productName}
           healthScore={scan.health_score}
@@ -395,18 +384,18 @@ function ResultContent() {
         />
         <button
           onClick={handleCompare}
-          className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all active:scale-95 ${
+          className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition-all duration-200 active:scale-[0.97] ${
             compareSaved
-              ? "border-primary-500/30 bg-primary-500/10 text-primary-400"
-              : "border-dark-700/50 bg-dark-800/50 text-dark-300 hover:border-primary-500/30 hover:text-primary-400"
+              ? "border-primary-500/20 bg-primary-500/8 text-primary-400"
+              : "border-white/[0.06] bg-white/[0.03] text-dark-400 hover:border-primary-500/20 hover:text-primary-400"
           }`}
         >
           <GitCompare className="h-4 w-4" />
           {compareSaved ? "Added" : "Compare"}
         </button>
         {compareSaved && (
-          <span className="flex items-center gap-1 text-xs text-primary-400">
-            <Info className="h-3 w-3" /> Ready to compare
+          <span className="flex items-center gap-1 text-[10px] text-primary-400">
+            <Info className="h-3 w-3" /> Ready
           </span>
         )}
       </div>
@@ -425,33 +414,33 @@ function ResultContent() {
         />
       </div>
 
-      {/* Healthy Alternatives - Only show for low health score */}
+      {/* Healthy Alternatives */}
       {scan.health_score < 60 && (() => {
         const alternatives = getAlternatives(productName || "");
         return (
           <div className="mx-4 mb-4">
-            <p className="text-xs font-semibold text-dark-500 uppercase tracking-wider mb-2 px-1">
+            <p className="text-[10px] font-semibold text-dark-500 uppercase tracking-widest mb-2 px-1">
               Healthier Alternatives
             </p>
             <div className="glass-card p-4">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary-500/10">
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500/8">
                   <Leaf className="h-4 w-4 text-primary-400" />
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-dark-50">Try These Instead</p>
-                  <p className="text-[10px] text-dark-400">Healthier options with better scores</p>
+                  <p className="text-[10px] text-dark-500">Healthier options with better scores</p>
                 </div>
               </div>
-              <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+              <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 no-scrollbar">
                 {alternatives.map((alt) => (
-                  <div key={alt.name} className="min-w-[140px] flex-shrink-0 rounded-xl bg-dark-800/50 border border-dark-700/50 p-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-500/10 mb-2">
+                  <div key={alt.name} className="min-w-[140px] flex-shrink-0 rounded-xl bg-white/[0.03] border border-white/[0.04] p-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-500/8 mb-2">
                       <Leaf className="h-5 w-5 text-primary-400" />
                     </div>
                     <p className="text-xs font-semibold text-dark-50 mb-0.5">{alt.name}</p>
-                    <p className="text-[10px] text-dark-400 mb-2">{alt.reason}</p>
-                    <span className="inline-flex items-center rounded-full bg-primary-500/15 px-2 py-0.5 text-[10px] font-bold text-primary-400">
+                    <p className="text-[10px] text-dark-500 mb-2">{alt.reason}</p>
+                    <span className="inline-flex items-center rounded-full bg-primary-500/10 px-2 py-0.5 text-[10px] font-bold text-primary-400">
                       Score: {alt.estimatedScore}
                     </span>
                   </div>
@@ -468,7 +457,7 @@ function ResultContent() {
           <div className="flex items-center gap-3">
             <div
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold"
-              style={{ backgroundColor: `${novaColor}15`, color: novaColor }}
+              style={{ backgroundColor: `${novaColor}10`, color: novaColor }}
             >
               {scan.nova_group}
             </div>
@@ -486,16 +475,18 @@ function ResultContent() {
       <div className="mx-4 mb-4">
         <button
           onClick={() => setShowNutrition(!showNutrition)}
-          className="glass-card w-full flex items-center justify-between p-4 transition-colors hover:bg-dark-700/30"
+          className="glass-card w-full flex items-center justify-between p-4 transition-colors hover:bg-white/[0.04]"
         >
           <div className="flex items-center gap-3">
-            <Flame className="h-5 w-5 text-accent-400" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-500/8">
+              <Flame className="h-4 w-4 text-accent-400" />
+            </div>
             <span className="text-sm font-semibold text-dark-50">Nutrition Facts</span>
           </div>
           {showNutrition ? (
-            <ChevronUp className="h-4 w-4 text-dark-400" />
+            <ChevronUp className="h-4 w-4 text-dark-500" />
           ) : (
-            <ChevronDown className="h-4 w-4 text-dark-400" />
+            <ChevronDown className="h-4 w-4 text-dark-500" />
           )}
         </button>
         {showNutrition && (
@@ -508,7 +499,7 @@ function ResultContent() {
             <NutritionRow label="Saturated Fat" value={scan.nutrition.saturated_fat} unit="g" bad />
             <NutritionRow label="Fiber" value={scan.nutrition.fiber} unit="g" good />
             <NutritionRow label="Sodium" value={scan.nutrition.sodium} unit="mg" bad />
-            <p className="text-[10px] text-dark-600 text-right">per 100g serving</p>
+            <p className="text-[10px] text-dark-600 text-right pt-1">per 100g serving</p>
           </div>
         )}
       </div>
@@ -518,25 +509,27 @@ function ResultContent() {
         <div className="mx-4 mb-4">
           <button
             onClick={() => setShowIngredients(!showIngredients)}
-            className="glass-card w-full flex items-center justify-between p-4 transition-colors hover:bg-dark-700/30"
+            className="glass-card w-full flex items-center justify-between p-4 transition-colors hover:bg-white/[0.04]"
           >
             <div className="flex items-center gap-3">
-              <Leaf className="h-5 w-5 text-primary-400" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-500/8">
+                <Leaf className="h-4 w-4 text-primary-400" />
+              </div>
               <span className="text-sm font-semibold text-dark-50">Ingredient Risks</span>
               <span className="badge-moderate">{scan.ingredients.length}</span>
             </div>
             {showIngredients ? (
-              <ChevronUp className="h-4 w-4 text-dark-400" />
+              <ChevronUp className="h-4 w-4 text-dark-500" />
             ) : (
-              <ChevronDown className="h-4 w-4 text-dark-400" />
+              <ChevronDown className="h-4 w-4 text-dark-500" />
             )}
           </button>
           {showIngredients && (
-            <div className="glass-card border-t-0 rounded-t-none p-4 space-y-2">
+            <div className="glass-card border-t-0 rounded-t-none p-4 space-y-3">
               {scan.ingredients.map((ing, i) => (
-                <div key={i} className="flex items-start gap-2">
+                <div key={i} className="flex items-start gap-3">
                   <span
-                    className={`mt-1 h-2 w-2 shrink-0 rounded-full ${
+                    className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${
                       ing.risk_level === "high"
                         ? "bg-danger-500"
                         : ing.risk_level === "moderate"
@@ -545,8 +538,8 @@ function ResultContent() {
                     }`}
                   />
                   <div>
-                    <p className="text-sm text-dark-50">{ing.name}</p>
-                    <p className="text-xs text-dark-400">{ing.explanation}</p>
+                    <p className="text-sm text-dark-100">{ing.name}</p>
+                    <p className="text-xs text-dark-500">{ing.explanation}</p>
                   </div>
                 </div>
               ))}
@@ -559,8 +552,10 @@ function ResultContent() {
       {scan.allergens && scan.allergens.length > 0 && (
         <div className="mx-4 mb-4">
           <div className="glass-card p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="h-4 w-4 text-accent-400" />
+            <div className="flex items-center gap-2 mb-3">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent-500/8">
+                <AlertTriangle className="h-3.5 w-3.5 text-accent-400" />
+              </div>
               <span className="text-sm font-semibold text-dark-50">Allergens</span>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -573,8 +568,8 @@ function ResultContent() {
                     key={i}
                     className={`rounded-full px-3 py-1 text-xs font-medium ${
                       isMatch
-                        ? "bg-danger-500/15 text-danger-400 border border-danger-500/30"
-                        : "bg-dark-700/50 text-dark-300"
+                        ? "bg-danger-500/10 text-danger-400 border border-danger-500/20"
+                        : "bg-white/[0.04] text-dark-400 border border-white/[0.04]"
                     }`}
                   >
                     {allergen.replace(/en:/g, "")}
@@ -606,11 +601,11 @@ function NutritionRow({
   bad?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between">
-      <span className="text-sm text-dark-300">{label}</span>
+    <div className="flex items-center justify-between py-0.5">
+      <span className="text-sm text-dark-400">{label}</span>
       <span
         className={`text-sm font-medium ${
-          good ? "text-primary-400" : bad ? "text-danger-400" : "text-dark-50"
+          good ? "text-primary-400" : bad ? "text-danger-400" : "text-dark-100"
         }`}
       >
         {typeof value === "number" ? value.toFixed(1) : value} {unit}
@@ -624,7 +619,7 @@ export default function ResultPage() {
     <Suspense
       fallback={
         <main className="min-h-screen bg-dark-900 flex items-center justify-center">
-          <div className="h-10 w-10 animate-spin rounded-full border-3 border-primary-500/30 border-t-primary-500" />
+          <div className="h-10 w-10 animate-spin rounded-full border-3 border-primary-500/20 border-t-primary-500" />
         </main>
       }
     >

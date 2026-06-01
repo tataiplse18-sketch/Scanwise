@@ -1,16 +1,5 @@
 "use client";
 
-// ============================================================
-// ScanWise - Health Score Circle Component
-// ============================================================
-// Animated circular progress indicator for health scores (0-100).
-// Color changes based on score range:
-//   0-30  (poor)  → Red
-//   31-60 (fair)  → Amber
-//   61-80 (good)  → Green
-//   81-100 (great)→ Emerald
-// ============================================================
-
 import { useEffect, useState } from "react";
 import { getHealthScoreInfo } from "@/types";
 
@@ -33,15 +22,20 @@ export default function HealthScoreCircle({
   const targetOffset = circumference - (score / 100) * circumference;
 
   useEffect(() => {
-    // Animate from full offset to target offset
     const timer = setTimeout(() => {
       setAnimatedOffset(targetOffset);
-    }, 100);
+    }, 150);
     return () => clearTimeout(timer);
   }, [targetOffset]);
 
   return (
     <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
+      {/* Glow effect behind the circle */}
+      <div
+        className="absolute inset-0 rounded-full blur-2xl opacity-20"
+        style={{ backgroundColor: info.color }}
+      />
+
       <svg width={size} height={size} className="-rotate-90">
         {/* Background circle */}
         <circle
@@ -49,7 +43,7 @@ export default function HealthScoreCircle({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="rgba(255,255,255,0.05)"
+          stroke="rgba(255,255,255,0.04)"
           strokeWidth={strokeWidth}
         />
         {/* Progress circle */}
@@ -65,16 +59,16 @@ export default function HealthScoreCircle({
           strokeDashoffset={animatedOffset}
           className="score-ring"
           style={{
-            filter: `drop-shadow(0 0 8px ${info.color}40)`,
+            filter: `drop-shadow(0 0 6px ${info.color}30)`,
           }}
         />
       </svg>
       {/* Center text */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-4xl font-bold" style={{ color: info.color }}>
+        <span className="text-4xl font-bold tracking-tight" style={{ color: info.color }}>
           {score}
         </span>
-        <span className="text-xs font-medium uppercase tracking-wider text-dark-400 mt-1">
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-dark-400 mt-1">
           {info.label}
         </span>
       </div>

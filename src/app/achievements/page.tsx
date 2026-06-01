@@ -24,10 +24,7 @@ import {
 } from "@/types";
 import { checkAndUnlockAchievements } from "@/lib/achievements";
 
-// ============================================================
-// Achievement Unlock Celebration Modal
-// ============================================================
-
+// Celebration Modal
 interface CelebrationModalProps {
   achievement: {
     id: string;
@@ -47,7 +44,7 @@ function CelebrationModal({ achievement, onDismiss }: CelebrationModalProps) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-dark-900/80 backdrop-blur-sm p-4">
-      {/* Confetti-like CSS animation particles */}
+      {/* Confetti */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {Array.from({ length: 20 }).map((_, i) => (
           <div
@@ -71,8 +68,8 @@ function CelebrationModal({ achievement, onDismiss }: CelebrationModalProps) {
         ))}
       </div>
 
-      <div className="glass-card p-8 text-center max-w-xs w-full relative animate-bounce-in border border-primary-500/30">
-        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary-500/15 mx-auto mb-4 text-4xl">
+      <div className="glass-card-elevated p-8 text-center max-w-xs w-full relative animate-bounce-in border border-primary-500/20">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary-500/10 mx-auto mb-4 text-4xl">
           {achievement.icon}
         </div>
         <h2 className="text-lg font-bold text-dark-50 mb-1">
@@ -84,7 +81,7 @@ function CelebrationModal({ achievement, onDismiss }: CelebrationModalProps) {
         <p className="text-xs text-dark-400 mb-4">
           {achievement.description}
         </p>
-        <span className="inline-flex items-center gap-1 rounded-full bg-primary-500/15 px-3 py-1 text-xs font-bold text-primary-400 mb-4">
+        <span className="inline-flex items-center gap-1 rounded-full bg-primary-500/10 px-3 py-1 text-xs font-bold text-primary-400 mb-4">
           +{achievement.points} XP
         </span>
         <div>
@@ -100,10 +97,7 @@ function CelebrationModal({ achievement, onDismiss }: CelebrationModalProps) {
   );
 }
 
-// ============================================================
-// Achievement Card Component
-// ============================================================
-
+// Achievement Card
 function AchievementCard({
   achievement,
 }: {
@@ -121,30 +115,30 @@ function AchievementCard({
   return (
     <div
       className={cn(
-        "rounded-xl border p-3 transition-all",
+        "rounded-xl border p-4 transition-all duration-200",
         achievement.is_unlocked
-          ? "bg-dark-800/70 border-primary-500/20 shadow-lg shadow-primary-500/5"
+          ? "bg-white/[0.04] border-primary-500/15 shadow-lg shadow-primary-500/5"
           : achievement.progress > 0
-          ? "bg-dark-800/40 border-dark-700/50"
-          : "bg-dark-800/20 border-dark-800/50"
+          ? "bg-white/[0.02] border-white/[0.06]"
+          : "bg-white/[0.01] border-white/[0.03]"
       )}
     >
       {/* Icon + Tier */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-3">
         <div
           className={cn(
             "flex h-12 w-12 items-center justify-center rounded-xl text-2xl",
             achievement.is_unlocked
-              ? "bg-primary-500/10"
+              ? "bg-primary-500/8"
               : achievement.progress > 0
-              ? "bg-dark-700/50"
-              : "bg-dark-800/50"
+              ? "bg-white/[0.03]"
+              : "bg-white/[0.02]"
           )}
         >
           {achievement.is_unlocked ? (
             achievement.icon
           ) : achievement.progress > 0 ? (
-            <span className="opacity-50">{achievement.icon}</span>
+            <span className="opacity-40">{achievement.icon}</span>
           ) : (
             <Lock className="h-5 w-5 text-dark-600" />
           )}
@@ -152,7 +146,7 @@ function AchievementCard({
         <span
           className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase"
           style={{
-            backgroundColor: `${tierColor}15`,
+            backgroundColor: `${tierColor}10`,
             color: tierColor,
           }}
         >
@@ -168,7 +162,7 @@ function AchievementCard({
             ? "text-dark-50"
             : achievement.progress > 0
             ? "text-dark-200"
-            : "text-dark-500"
+            : "text-dark-600"
         )}
       >
         {achievement.is_unlocked || achievement.progress > 0
@@ -203,9 +197,9 @@ function AchievementCard({
               {progressPercent}%
             </span>
           </div>
-          <div className="h-1.5 rounded-full bg-dark-700 overflow-hidden">
+          <div className="h-1.5 rounded-full bg-white/[0.04] overflow-hidden">
             <div
-              className="h-full rounded-full bg-primary-500/60 transition-all duration-500"
+              className="h-full rounded-full bg-primary-500/50 transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -214,7 +208,7 @@ function AchievementCard({
 
       {/* XP Badge (unlocked only) */}
       {achievement.is_unlocked && (
-        <span className="inline-flex items-center gap-1 rounded-full bg-primary-500/10 px-2 py-0.5 text-[10px] font-bold text-primary-400 mt-1">
+        <span className="inline-flex items-center gap-1 rounded-full bg-primary-500/8 px-2 py-0.5 text-[10px] font-bold text-primary-400 mt-1">
           +{achievement.points} XP
         </span>
       )}
@@ -222,10 +216,7 @@ function AchievementCard({
   );
 }
 
-// ============================================================
-// Main Achievements Page Content
-// ============================================================
-
+// Main Page
 function AchievementsContent() {
   const [achievements, setAchievements] = useState<AchievementWithProgress[]>([]);
   const [profile, setProfile] = useState<{
@@ -259,10 +250,8 @@ function AchievementsContent() {
         return;
       }
 
-      // Check for new unlocks first
       const newUnlocks = await checkAndUnlockAchievements(user.id);
 
-      // Show celebration for the first new unlock
       if (newUnlocks.length > 0) {
         setCelebration(newUnlocks[0]);
         if (newUnlocks.length > 1) {
@@ -273,7 +262,6 @@ function AchievementsContent() {
         }
       }
 
-      // Fetch achievements with progress
       const { data: allAchs } = await supabase
         .from("achievements")
         .select("*")
@@ -294,7 +282,6 @@ function AchievementsContent() {
         });
       });
 
-      // Fetch profile for XP/level
       const { data: prof } = await supabase
         .from("profiles")
         .select("xp_points, level")
@@ -303,9 +290,7 @@ function AchievementsContent() {
 
       setProfile(prof ?? { xp_points: 0, level: 1 });
 
-      // Build achievements with progress
       if (allAchs) {
-        // Fetch progress data for accurate calculations
         const { count: healthyCount } = await supabase
           .from("scans")
           .select("*", { count: "exact", head: true })
@@ -357,7 +342,6 @@ function AchievementsContent() {
     }
   }
 
-  // Filter logic
   const filteredAchievements =
     activeFilter === "all"
       ? achievements
@@ -369,7 +353,6 @@ function AchievementsContent() {
   const xpForCurrentLevel = (level - 1) * 100;
   const xpForNextLevel = getXPForNextLevel(level);
   const xpInCurrentLevel = totalXP - xpForCurrentLevel;
-  const xpNeeded = xpForNextLevel - xpInCurrentLevel;
   const xpPercent = Math.min(Math.round((xpInCurrentLevel / xpForNextLevel) * 100), 100);
 
   const filterTabs: Array<{ key: "all" | AchievementCategory; label: string }> = [
@@ -381,7 +364,6 @@ function AchievementsContent() {
     { key: "premium", label: "Premium" },
   ];
 
-  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-dark-900 pb-24 flex items-center justify-center">
@@ -400,23 +382,23 @@ function AchievementsContent() {
         />
       )}
 
-      {/* ===== Top Bar ===== */}
-      <header className="sticky top-0 z-50 flex items-center justify-between px-4 py-3 border-b border-dark-800 bg-dark-900/80 backdrop-blur-xl">
+      {/* Top Bar */}
+      <header className="sticky top-0 z-50 flex items-center justify-between px-4 py-3 border-b border-white/[0.04] bg-dark-900/80 backdrop-blur-xl">
         <Link
           href="/home"
-          className="flex h-9 w-9 items-center justify-center rounded-xl bg-dark-800 text-dark-400 hover:text-dark-200 transition-colors"
+          className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.04] text-dark-400 hover:text-dark-200 transition-colors"
         >
           <ArrowLeft className="h-5 w-5" />
         </Link>
-        <h1 className="text-sm font-semibold text-dark-200">Achievements</h1>
+        <h1 className="text-sm font-semibold text-dark-300">Achievements</h1>
         <div className="w-9" />
       </header>
 
       <main className="px-4 py-6 pb-28 space-y-6">
-        {/* ===== Level + XP Progress ===== */}
+        {/* Level + XP Progress */}
         <section className="glass-card p-5">
           <div className="flex items-center gap-3 mb-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-500/10">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-500/8">
               <Trophy className="h-6 w-6 text-primary-400" />
             </div>
             <div className="flex-1">
@@ -443,7 +425,7 @@ function AchievementsContent() {
                 Level {level + 1}
               </span>
             </div>
-            <div className="h-2 rounded-full bg-dark-700 overflow-hidden">
+            <div className="h-2 rounded-full bg-white/[0.04] overflow-hidden">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-primary-500 to-primary-400 transition-all duration-500"
                 style={{ width: `${xpPercent}%` }}
@@ -452,17 +434,17 @@ function AchievementsContent() {
           </div>
         </section>
 
-        {/* ===== Filter Tabs ===== */}
-        <section className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
+        {/* Filter Tabs */}
+        <section className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 no-scrollbar">
           {filterTabs.map(({ key, label }) => (
             <button
               key={key}
               onClick={() => setActiveFilter(key)}
               className={cn(
-                "rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors whitespace-nowrap",
+                "rounded-full px-3.5 py-1.5 text-xs font-medium transition-all duration-200 whitespace-nowrap",
                 activeFilter === key
                   ? "bg-primary-500 text-white"
-                  : "bg-dark-800 text-dark-400 hover:text-dark-200"
+                  : "bg-white/[0.04] text-dark-500 hover:text-dark-300"
               )}
             >
               {label}
@@ -470,7 +452,7 @@ function AchievementsContent() {
           ))}
         </section>
 
-        {/* ===== Achievement Grid ===== */}
+        {/* Achievement Grid */}
         <section className="grid grid-cols-2 gap-3">
           {filteredAchievements.map((ach) => (
             <AchievementCard key={ach.id} achievement={ach} />
@@ -480,10 +462,10 @@ function AchievementsContent() {
         {/* Empty state */}
         {filteredAchievements.length === 0 && (
           <div className="flex flex-col items-center gap-3 py-10 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-dark-800">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/[0.03]">
               <Trophy className="h-8 w-8 text-dark-600" />
             </div>
-            <p className="text-dark-400 text-sm">
+            <p className="text-dark-500 text-sm">
               No achievements in this category yet
             </p>
           </div>

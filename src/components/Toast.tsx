@@ -2,10 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 
-// ============================================================
-// ScanWise - Toast Notification System
-// ============================================================
-
 interface ToastConfig {
   message: string;
   type?: "success" | "error" | "info" | "warning";
@@ -34,10 +30,10 @@ export function showToast(config: ToastConfig) {
 }
 
 const TYPE_STYLES: Record<string, string> = {
-  success: "bg-primary-500/15 border-primary-500/30 text-primary-300",
-  error: "bg-danger-500/15 border-danger-500/30 text-danger-300",
-  info: "bg-blue-500/15 border-blue-500/30 text-blue-300",
-  warning: "bg-accent-500/15 border-accent-500/30 text-accent-300",
+  success: "bg-primary-500/10 border-primary-500/15 text-primary-300",
+  error: "bg-danger-500/10 border-danger-500/15 text-danger-300",
+  info: "bg-white/[0.06] border-white/[0.08] text-dark-200",
+  warning: "bg-accent-500/10 border-accent-500/15 text-accent-300",
 };
 
 const TYPE_ICONS: Record<string, string> = {
@@ -72,12 +68,12 @@ function ToastContainer() {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className={`pointer-events-auto flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium backdrop-blur-xl animate-slide-up ${
+          className={`pointer-events-auto flex items-center gap-2.5 rounded-xl border px-4 py-3 text-sm font-medium backdrop-blur-xl animate-slide-down shadow-lg ${
             TYPE_STYLES[toast.type ?? "info"] ?? TYPE_STYLES.info
           }`}
         >
-          <span className="text-base">{TYPE_ICONS[toast.type ?? "info"] ?? "ℹ"}</span>
-          <span className="flex-1">{toast.message}</span>
+          <span className="text-sm opacity-70">{TYPE_ICONS[toast.type ?? "info"] ?? "ℹ"}</span>
+          <span className="flex-1 text-xs">{toast.message}</span>
         </div>
       ))}
     </div>

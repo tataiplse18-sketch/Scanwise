@@ -42,7 +42,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#0a0a0f",
+  themeColor: "#050505",
 };
 
 export default function RootLayout({
@@ -56,7 +56,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
       <body
-        className={`${inter.variable} font-sans antialiased min-h-screen bg-dark-900 text-dark-50`}
+        className={`${inter.variable} font-sans antialiased min-h-screen bg-[#050505] text-dark-50`}
       >
         {children}
         <ToastContainer />
